@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Skate Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&family=Noto+Sans+KR:wght@400;500;600;700;900&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B1622; --panel:#101F31; --panel-2:#152A41; --line: rgba(148,190,214,0.18);
+    --ice:#5FD3E8; --ice-dim: rgba(95,211,232,0.14); --amber:#F2A65A; --amber-dim: rgba(242,166,90,0.16);
+    --coral:#FF6F6F; --coral-dim: rgba(255,111,111,0.15); --good:#7BD88F; --text:#EAF2F6; --text-dim:#93A9BC;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0; background:var(--ink);
+    background-image: radial-gradient(ellipse at 10% -10%, rgba(95,211,232,0.10), transparent 45%), radial-gradient(ellipse at 100% 0%, rgba(242,166,90,0.06), transparent 40%);
+    color:var(--text); font-family:'Noto Sans SC','Noto Sans KR', -apple-system, sans-serif;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); -webkit-font-smoothing:antialiased;
+  }
+  .num{font-family:'Manrope','Noto Sans SC',sans-serif;}
+  a{color:inherit;} button{font-family:inherit;}
+  .app{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 22px;max-width:920px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:.2px;}
+  .brand .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--ice),#2E8FA8);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 14px rgba(95,211,232,0.25);}
+  .logo{display:inline-flex;align-items:flex-end;font-family:'Manrope','Noto Sans SC',sans-serif;font-weight:800;color:#4DA3FF;line-height:1;letter-spacing:-.3px;font-size:22px;}
+  .logo .skate-l{height:1.12em;width:auto;margin:0 .03em -.2em;}
+  .logo-xl{margin:0 0 10px;}
+  .logo-xl .logo{font-size:44px;}
+  .brand .sub{font-size:11px;color:var(--text-dim);font-weight:500;}
+  .userchip{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-dim);}
+  .avatar-badge{width:30px;height:30px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .logout-btn,.langswitch-btn{background:none;border:1px solid var(--line);color:var(--text-dim);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;}
+  .logout-btn:hover,.langswitch-btn:hover{color:var(--text);border-color:var(--ice);}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px;}
+
+  /* lang select */
+  .lang-wrap{display:flex;flex-direction:column;align-items:center;padding-top:10vh;}
+  .lang-hero{text-align:center;margin-bottom:30px;}
+  .lang-hero .mark{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--ice),#2E8FA8);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(95,211,232,0.25);}
+  .lang-hero h1{font-size:20px;margin:0 0 6px;}
+  .lang-hero p{color:var(--text-dim);font-size:13px;margin:0;}
+  .lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:420px;}
+  .lang-opt{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:16px 14px;cursor:pointer;text-align:left;}
+  .lang-opt:hover{border-color:var(--ice);}
+  .lang-opt .native{font-size:15px;font-weight:700;}
+  .lang-opt .eng{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+
+  /* Auth */
+  .auth-wrap{display:flex;flex-direction:column;align-items:center;padding-top:6vh;}
+  .auth-hero{text-align:center;margin-bottom:26px;max-width:440px;}
+  .auth-hero h1{font-size:24px;line-height:1.35;margin:0 0 8px;font-weight:700;}
+  .auth-hero p{color:var(--text-dim);font-size:14px;line-height:1.7;margin:0;}
+  .auth-card{width:100%;max-width:400px;}
+  .tabs{display:flex;background:var(--panel-2);border-radius:10px;padding:4px;margin-bottom:20px;}
+  .tab{flex:1;text-align:center;padding:9px 0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-dim);transition:.15s;}
+  .tab.active{background:var(--ice);color:#06232B;}
+  label{display:block;font-size:12.5px;color:var(--text-dim);margin:0 0 6px;font-weight:500;}
+  .field{margin-bottom:14px;}
+  input[type=email],input[type=password],input[type=text],input[type=number],select,textarea{
+    width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;}
+  input:focus,select:focus,textarea:focus{border-color:var(--ice);box-shadow:0 0 0 3px var(--ice-dim);}
+  .primary-btn{width:100%;background:linear-gradient(135deg,var(--ice),#3FB6CC);color:#06232B;border:none;padding:12px 0;border-radius:10px;font-weight:700;font-size:14.5px;cursor:pointer;margin-top:4px;}
+  .primary-btn:active{transform:translateY(1px);}
+  .ghost-btn{background:none;border:1px solid var(--line);color:var(--text);padding:11px 16px;border-radius:10px;font-weight:600;font-size:13.5px;cursor:pointer;}
+  .ghost-btn:hover{border-color:var(--ice);}
+  .err-msg{background:var(--coral-dim);color:#FFB3B3;border:1px solid rgba(255,111,111,0.35);border-radius:9px;padding:9px 12px;font-size:13px;margin-bottom:14px;display:none;}
+  .err-msg.show{display:block;}
+  .hint{font-size:11.5px;color:var(--text-dim);margin-top:16px;text-align:center;line-height:1.6;}
+
+  /* Onboarding */
+  .onb-progress{display:flex;gap:6px;margin-bottom:22px;}
+  .onb-progress i{flex:1;height:3px;border-radius:2px;background:var(--line);}
+  .onb-progress i.on{background:var(--ice);}
+  .onb-step h2{font-size:19px;margin:0 0 4px;}
+  .onb-step p.sub{color:var(--text-dim);font-size:13px;margin:0 0 20px;}
+  .choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px;}
+  .choice{border:1px solid var(--line);background:var(--panel-2);border-radius:11px;padding:14px 10px;text-align:center;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--text-dim);}
+  .choice.sel{border-color:var(--ice);background:var(--ice-dim);color:var(--ice);}
+  .avatar-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:6px;}
+  .avatar-opt{aspect-ratio:1;border-radius:50%;background:var(--panel-2);border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;}
+  .avatar-opt.sel{border-color:var(--ice);background:var(--ice-dim);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .onb-nav{display:flex;justify-content:space-between;margin-top:22px;gap:10px;}
+
+  /* Dashboard */
+  .hello{margin-bottom:4px;font-size:22px;font-weight:700;}
+  .hello .em{color:var(--ice);}
+  .datestr{color:var(--text-dim);font-size:13px;margin-bottom:22px;}
+  .section-title{display:flex;align-items:baseline;justify-content:space-between;margin:34px 0 14px;}
+  .section-title h3{font-size:16px;margin:0;font-weight:700;}
+  .section-title span{font-size:12px;color:var(--text-dim);}
+  .goal-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;}
+  .goal-item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line);}
+  .goal-item:first-child{border-top:none;padding-top:0;}
+  .goal-check{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line);flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:transparent;}
+  .goal-check.done{background:var(--good);border-color:var(--good);color:#06231A;}
+  .goal-body b{font-size:14px;font-weight:600;}
+  .goal-body p{margin:3px 0 0;font-size:12.5px;color:var(--text-dim);line-height:1.6;}
+  .goal-tag{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:6px;margin-top:6px;font-weight:600;}
+  .tag-warm{background:var(--amber-dim);color:var(--amber);}
+  .tag-strength{background:var(--ice-dim);color:var(--ice);}
+  .tag-recover{background:rgba(123,216,143,0.15);color:var(--good);}
+  .tag-safety{background:var(--coral-dim);color:#FF9B9B;}
+  .goal-progress{font-size:12px;color:var(--text-dim);margin-top:14px;}
+  .vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .vid-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .vid-thumb{height:88px;background:linear-gradient(135deg,var(--panel-2),#1C3550);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--text-dim);border-bottom:1px solid var(--line);}
+  .vid-body{padding:12px 14px 14px;}
+  .vid-body b{font-size:13.5px;display:block;margin-bottom:4px;}
+  .vid-body p{font-size:12px;color:var(--text-dim);margin:0 0 8px;line-height:1.6;}
+  .vid-meta{display:flex;justify-content:space-between;align-items:center;}
+  .vid-level{font-size:10.5px;color:var(--text-dim);}
+  .vid-link{font-size:12px;color:var(--ice);font-weight:700;text-decoration:none;}
+  .check-tool{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;}
+  .check-tool h3{margin:0 0 4px;font-size:16px;}
+  .check-tool p.sub{color:var(--text-dim);font-size:13px;margin:0 0 18px;}
+  .qrow{margin-bottom:16px;}
+  .qrow label{font-size:13.5px;color:var(--text);margin-bottom:8px;}
+  .opt-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .opt-pill{border:1px solid var(--line);background:var(--panel-2);border-radius:20px;padding:7px 14px;font-size:12.5px;cursor:pointer;color:var(--text-dim);}
+  .opt-pill.sel{border-color:var(--ice);background:var(--ice-dim);color:var(--ice);}
+  .result-box{margin-top:18px;border-radius:11px;padding:16px;display:none;}
+  .result-box.show{display:block;}
+  .result-low{background:rgba(123,216,143,0.12);border:1px solid rgba(123,216,143,0.3);}
+  .result-mid{background:var(--amber-dim);border:1px solid rgba(242,166,90,0.35);}
+  .result-high{background:var(--coral-dim);border:1px solid rgba(255,111,111,0.35);}
+  .result-box b{display:block;font-size:14px;margin-bottom:6px;}
+  .result-box p{font-size:12.5px;line-height:1.7;margin:0;color:var(--text);opacity:.9;}
+  .disclaimer{font-size:11px;color:var(--text-dim);margin-top:14px;line-height:1.6;border-top:1px solid var(--line);padding-top:12px;}
+
+  .admin-badge{display:inline-flex;align-items:center;gap:6px;background:var(--amber-dim);color:var(--amber);padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;margin-bottom:16px;}
+  .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:26px;}
+  .stat-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;}
+  .stat-card .n{font-size:26px;font-weight:800;}
+  .stat-card .l{font-size:12px;color:var(--text-dim);margin-top:2px;}
+  .form-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:22px;}
+  .form-card h3{margin:0 0 16px;font-size:15px;}
+  .vid-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--line);}
+  .vid-row:first-child{border-top:none;}
+  .vid-row .t{font-size:13.5px;font-weight:600;}
+  .vid-row .m{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+  .del-btn{background:none;border:1px solid var(--line);color:#FF9B9B;border-radius:8px;padding:6px 10px;font-size:11.5px;cursor:pointer;}
+  .del-btn:hover{border-color:var(--coral);}
+  .empty{color:var(--text-dim);font-size:13px;padding:14px 0;}
+  .tabbar{display:flex;gap:8px;margin-bottom:22px;border-bottom:1px solid var(--line);}
+  .tabbar button{background:none;border:none;color:var(--text-dim);padding:10px 4px;font-size:13.5px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-right:14px;}
+  .tabbar button.on{color:var(--ice);border-color:var(--ice);}
+  @media(max-width:520px){
+    .choice-grid{grid-template-columns:1fr 1fr;} .row2{grid-template-columns:1fr;}
+    .vid-grid{grid-template-columns:1fr;} .admin-grid{grid-template-columns:1fr 1fr;}
+    .lang-grid{grid-template-columns:1fr 1fr;}
+  }
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar" style="display:none;">
+  <div class="brand"><div><span class="logo" role="img" aria-label="Skate Lab">Skate&nbsp;<svg class="skate-l" viewBox="0 0 26 34" aria-hidden="true"><path d="M3 1.5Q3 0.5 4 0.5H10Q11 0.5 11 1.5V18.5H23Q26 18.5 26 21.5V24.5H3Z" fill="#FF7EB6"/><circle cx="7" cy="6" r="1" fill="#fff" opacity=".85"/><circle cx="7" cy="10" r="1" fill="#fff" opacity=".85"/><circle cx="7" cy="14" r="1" fill="#fff" opacity=".85"/><path d="M7 24.5V29M21 24.5V29" stroke="#4DA3FF" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M1.5 29.5H22Q25 29.5 25 26.5" stroke="#4DA3FF" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>ab</span><div class="sub" id="brand-sub"></div></div></div>
+  <div class="userchip" id="userchip"></div>
+</div>
+
+<div class="app">
+
+  <!-- ============ LANGUAGE SELECT ============ -->
+  <section id="view-lang" class="lang-wrap">
+    <div class="lang-hero">
+      <h1 class="logo-xl"><span class="logo" role="img" aria-label="Skate Lab">Skate&nbsp;<svg class="skate-l" viewBox="0 0 26 34" aria-hidden="true"><path d="M3 1.5Q3 0.5 4 0.5H10Q11 0.5 11 1.5V18.5H23Q26 18.5 26 21.5V24.5H3Z" fill="#FF7EB6"/><circle cx="7" cy="6" r="1" fill="#fff" opacity=".85"/><circle cx="7" cy="10" r="1" fill="#fff" opacity=".85"/><circle cx="7" cy="14" r="1" fill="#fff" opacity=".85"/><path d="M7 24.5V29M21 24.5V29" stroke="#4DA3FF" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M1.5 29.5H22Q25 29.5 25 26.5" stroke="#4DA3FF" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>ab</span></h1>
+      <p>Choose your language / 选择语言 / 選擇語言 / 言語を選択 / 언어 선택 / Choisissez votre langue / Elige tu idioma</p>
+    </div>
+    <div class="lang-grid" id="lang-grid"></div>
+  </section>
+
+  <!-- ============ AUTH ============ -->
+  <section id="view-auth" class="auth-wrap hidden">
+    <div class="auth-hero">
+      <h1 id="auth-title"></h1>
+      <p id="auth-sub"></p>
+    </div>
+    <div class="card auth-card">
+      <div class="tabs">
+        <div class="tab active" id="tab-signin" onclick="switchAuthTab('signin')"></div>
+        <div class="tab" id="tab-signup" onclick="switchAuthTab('signup')"></div>
+      </div>
+      <div class="err-msg" id="auth-err"></div>
+
+      <div id="form-signin">
+        <div class="field"><label id="l-si-email"></label><input type="email" id="si-email"></div>
+        <div class="field"><label id="l-si-pass"></label><input type="password" id="si-pass"></div>
+        <button class="primary-btn" id="btn-si" onclick="handleSignIn()"></button>
+      </div>
+
+      <div id="form-signup" class="hidden">
+        <div class="field"><label id="l-su-email"></label><input type="email" id="su-email"></div>
+        <div class="field"><label id="l-su-pass"></label><input type="password" id="su-pass"></div>
+        <div class="field"><label id="l-su-pass2"></label><input type="password" id="su-pass2"></div>
+        <button class="primary-btn" id="btn-su" onclick="handleSignUp()"></button>
+      </div>
+      <div class="hint" id="auth-hint"></div>
+    </div>
+    <button class="langswitch-btn" style="margin-top:18px;" onclick="backToLang()" id="btn-change-lang"></button>
+  </section>
+
+  <!-- ============ ONBOARDING ============ -->
+  <section id="view-onboard" class="hidden">
+    <div class="card" style="max-width:460px;margin:0 auto;">
+      <div class="onb-progress"><i id="pg-1" class="on"></i><i id="pg-2"></i><i id="pg-3"></i><i id="pg-4"></i></div>
+
+      <div class="onb-step" id="step-1">
+        <h2 id="onb1-title"></h2><p class="sub" id="onb1-sub"></p>
+        <div class="choice-grid" id="referral-grid"></div>
+      </div>
+
+      <div class="onb-step hidden" id="step-2">
+        <h2 id="onb2-title"></h2><p class="sub" id="onb2-sub"></p>
+        <div class="field"><label id="l-ob-nick"></label><input type="text" id="ob-nick"></div>
+        <label id="l-ob-avatar"></label>
+        <div class="avatar-grid" id="avatar-grid"></div>
+      </div>
+
+      <div class="onb-step hidden" id="step-3">
+        <h2 id="onb3-title"></h2><p class="sub" id="onb3-sub"></p>
+        <div class="row2">
+          <div class="field"><label id="l-ob-age"></label><input type="number" id="ob-age" min="4" max="80"></div>
+          <div class="field"><label id="l-ob-gender"></label><select id="ob-gender"></select></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label id="l-ob-height"></label><input type="number" id="ob-height"></div>
+          <div class="field"><label id="l-ob-weight"></label><input type="number" id="ob-weight"></div>
+        </div>
+      </div>
+
+      <div class="onb-step hidden" id="step-4">
+        <h2 id="onb4-title"></h2><p class="sub" id="onb4-sub"></p>
+        <div class="choice-grid" id="exp-grid"></div>
+      </div>
+
+      <div class="err-msg" id="onb-err"></div>
+      <div class="onb-nav">
+        <button class="ghost-btn hidden" id="onb-back" onclick="onbBack()"></button>
+        <button class="primary-btn" id="onb-next" onclick="onbNext()" style="flex:1;"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ USER DASHBOARD ============ -->
+  <section id="view-dash" class="hidden">
+    <div class="hello"><span id="hello-prefix"></span><span class="em" id="dash-nick"></span> <span id="dash-avatar"></span></div>
+    <div class="datestr" id="dash-date"></div>
+
+    <div class="section-title"><h3 id="today-goals-title"></h3><span id="goal-progress-label"></span></div>
+    <div class="goal-card"><div id="goal-list"></div></div>
+
+    <div class="section-title"><h3 id="self-check-title"></h3><span id="self-check-note"></span></div>
+    <div class="check-tool">
+      <h3 id="check-card-title"></h3><p class="sub" id="check-card-sub"></p>
+      <div class="qrow"><label id="l-q-pain"></label><div class="opt-row" data-q="pain" id="opt-pain"></div></div>
+      <div class="qrow"><label id="l-q-swell"></label><div class="opt-row" data-q="swell" id="opt-swell"></div></div>
+      <div class="qrow"><label id="l-q-mobility"></label><div class="opt-row" data-q="mobility" id="opt-mobility"></div></div>
+      <button class="primary-btn" id="btn-view-result" onclick="runCheck()"></button>
+      <div class="result-box" id="check-result"></div>
+      <div class="disclaimer" id="disclaimer-text"></div>
+    </div>
+
+    <div class="section-title"><h3 id="recommended-videos-title"></h3><span id="vid-count-label"></span></div>
+    <div class="vid-grid" id="vid-grid"></div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section id="view-settings" class="hidden">
+    <div class="card" style="max-width:460px;margin:0 auto;">
+      <h2 id="set-title" style="font-size:19px;margin:0 0 4px;"></h2>
+      <p class="sub" id="set-sub" style="color:var(--text-dim);font-size:13px;margin:0 0 20px;"></p>
+
+      <label id="l-set-lang"></label>
+      <select id="set-lang" style="margin-bottom:14px;"></select>
+
+      <div class="field"><label id="l-set-nick"></label><input type="text" id="set-nick"></div>
+
+      <label id="l-set-avatar"></label>
+      <div class="avatar-grid" id="set-avatar-grid" style="margin-bottom:14px;"></div>
+
+      <div class="row2">
+        <div class="field"><label id="l-set-age"></label><input type="number" id="set-age" min="4" max="80"></div>
+        <div class="field"><label id="l-set-gender"></label><select id="set-gender"></select></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label id="l-set-height"></label><input type="number" id="set-height"></div>
+        <div class="field"><label id="l-set-weight"></label><input type="number" id="set-weight"></div>
+      </div>
+
+      <div class="field"><label id="l-set-exp"></label><select id="set-exp"></select></div>
+      <div class="field"><label id="l-set-jump"></label><select id="set-jump"></select></div>
+      <div class="field"><label id="l-set-spin"></label><select id="set-spin"></select></div>
+      <div class="field"><label id="l-set-comp"></label><select id="set-comp"></select></div>
+      <div class="field"><label id="l-set-fieldtest"></label><select id="set-fieldtest"></select></div>
+
+      <div class="err-msg" id="set-err"></div>
+      <div class="onb-nav">
+        <button class="ghost-btn" id="btn-set-back" onclick="cancelSettings()"></button>
+        <button class="primary-btn" id="btn-set-save" onclick="saveSettings()" style="flex:1;"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ADMIN DASHBOARD ============ -->
+  <section id="view-admin" class="hidden">
+    <div class="admin-badge" id="admin-badge"></div>
+    <div class="admin-grid">
+      <div class="stat-card"><div class="n num" id="ad-vidcount">0</div><div class="l" id="stat-video-count"></div></div>
+      <div class="stat-card"><div class="n num" id="ad-usercount">0</div><div class="l" id="stat-user-count"></div></div>
+    </div>
+
+    <div class="tabbar">
+      <button class="on" id="atab-videos" onclick="switchAdminTab('videos')"></button>
+      <button id="atab-feature" onclick="switchAdminTab('feature')"></button>
+      <button id="atab-users" onclick="switchAdminTab('users')"></button>
+    </div>
+
+    <div id="apanel-videos">
+      <div class="form-card">
+        <h3 id="form-add-video-title"></h3>
+        <div class="field"><label id="l-av-title"></label><input type="text" id="av-title"></div>
+        <div class="row2">
+          <div class="field"><label id="l-av-cat"></label><select id="av-cat"></select></div>
+          <div class="field"><label id="l-av-level"></label><select id="av-level"></select></div>
+        </div>
+        <div class="field"><label id="l-av-url"></label><input type="text" id="av-url"></div>
+        <div class="field"><label id="l-av-desc"></label><textarea id="av-desc" rows="2"></textarea></div>
+        <button class="primary-btn" id="btn-add-video" onclick="addVideo()"></button>
+      </div>
+      <div class="form-card">
+        <h3 id="existing-videos-title"></h3>
+        <div id="admin-vid-list"></div>
+      </div>
+    </div>
+
+    <div id="apanel-feature" class="hidden">
+      <div class="form-card">
+        <h3 id="form-add-feature-title"></h3>
+        <p class="sub" id="feature-sub" style="color:var(--text-dim);font-size:12.5px;margin:-8px 0 14px;"></p>
+        <div class="field"><label id="l-af-title"></label><input type="text" id="af-title"></div>
+        <div class="field"><label id="l-af-body"></label><textarea id="af-body" rows="3"></textarea></div>
+        <button class="primary-btn" id="btn-publish" onclick="addFeature()"></button>
+      </div>
+      <div class="form-card">
+        <h3 id="published-content-title"></h3>
+        <div id="admin-feature-list"></div>
+      </div>
+    </div>
+
+    <div id="apanel-users" class="hidden">
+      <div class="form-card">
+        <h3 id="registered-users-title"></h3>
+        <div id="admin-user-list"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script>
+/* ================= i18n ================= */
+const LANGS = [
+  {code:'zh-CN', native:'简体中文', eng:'Chinese (Simplified)'},
+  {code:'zh-TW', native:'繁體中文', eng:'Chinese (Traditional)'},
+  {code:'en',    native:'English', eng:'English'},
+  {code:'ja',    native:'日本語',  eng:'Japanese'},
+  {code:'ko',    native:'한국어',  eng:'Korean'},
+  {code:'fr',    native:'Français', eng:'French'},
+  {code:'es',    native:'Español',  eng:'Spanish'}
+];
+
+const T = {
+"zh-CN": {
+  brand_sub:'肌肉拉伤检测与恢复系统',
+  auth_title:'为花样滑冰运动员而生的\n肌肉拉伤检测与恢复平台',
+  auth_sub:'每日自动生成训练目标，配套检测与恢复视频，帮助你安全、科学地保持状态。',
+  tab_signin:'登录', tab_signup:'创建账户',
+  l_email:'邮箱', l_password:'密码', l_set_password:'设置密码', ph_set_password:'至少 6 位', l_confirm_password:'确认密码', ph_confirm_password:'再输入一次',
+  btn_signin:'登录', btn_signup:'创建账户', auth_hint:'数据保存在你当前浏览器中，用于演示完整流程。',
+  btn_change_lang:'切换语言',
+  err_fill_login:'请输入邮箱和密码', err_wrong_credentials:'邮箱或密码不正确', err_fill_signup:'请填写邮箱和密码',
+  err_password_short:'密码至少需要 6 位', err_password_mismatch:'两次输入的密码不一致',
+  err_admin_blocked:'该邮箱不可用于注册普通账户', err_already_registered:'该邮箱已注册，请直接登录',
+  onb1_title:'你从哪里听说 Figure Skating Lab？', onb1_sub:'帮助我们了解如何为你提供更合适的内容',
+  ref:['YouTube','Chrome 搜索','TikTok','朋友 / 教练推荐','Instagram','其他'],
+  onb2_title:'设置昵称与头像', onb2_sub:'用来在系统中称呼你', l_nickname:'昵称', l_avatar:'选择头像',
+  onb3_title:'基本身体信息', onb3_sub:'用于生成更贴合你的训练目标与推荐',
+  l_age:'年龄', l_gender:'性别', gender:['女','男','不透露'], l_height:'身高 (cm)', l_weight:'体重 (kg)',
+  onb4_title:'你学习花样滑冰多久了？', onb4_sub:'决定训练目标的强度与难度',
+  exp:['不到 1 年','1–3 年','3–6 年','6 年以上'],
+  onb_back:'上一步', onb_next:'下一步', onb_finish:'完成',
+  onb_err_referral:'请选择一个来源', onb_err_nickname:'请输入昵称', onb_err_physical:'请填写完整信息', onb_err_exp:'请选择练习年限',
+  hello_prefix:'你好，', today_goals_title:'今日训练目标', goal_progress_tpl:'{done}/{total} 已完成',
+  self_check_title:'肌肉自我检测', self_check_note:'非医疗诊断，仅供参考',
+  check_card_title:'你现在感觉怎么样？', check_card_sub:'回答以下问题，快速判断拉伤风险等级',
+  l_q_pain:'疼痛程度', pain:['无痛','轻微酸痛','明显疼痛','剧烈疼痛'],
+  l_q_swell:'是否有肿胀或淤青', swell:['没有','轻微','明显'],
+  l_q_mobility:'活动受限程度', mobility:['正常活动','动作稍受限','无法正常发力'],
+  btn_view_result:'查看结果',
+  result_low_title:'风险较低', result_low_body:'目前状态较好，可以按计划进行热身后训练。训练中如出现不适请立即停止。',
+  result_mid_title:'中度风险，建议谨慎', result_mid_body:'建议降低今日训练强度，优先安排"恢复"分类视频中的拉伸与放松动作，并持续观察 24-48 小时。若症状未缓解，请咨询专业人员。',
+  result_high_title:'较高风险，建议休息并就医', result_high_body:'当前症状提示可能存在明显拉伤，建议暂停冰上训练，进行休息、冷敷，并尽快咨询医生或运动医学专业人员，避免二次损伤。',
+  disclaimer:'此工具仅提供一般性建议，不能替代专业医疗诊断。如果疼痛剧烈、持续或伴随明显肿胀，请尽快咨询医生或运动医学专业人员。',
+  recommended_videos_title:'为你推荐的视频', vid_count_tpl:'{n} 个匹配你的等级', watch_link:'观看 →', coming_soon:'即将上线',
+  logout:'退出',
+  admin_badge:'⚙ 管理后台', stat_video_count:'视频总数', stat_user_count:'注册用户数',
+  tab_videos:'视频管理', tab_feature:'功能 / 公告', tab_users:'用户列表',
+  form_add_video:'添加新视频', l_title:'标题', l_category:'分类',
+  cat:{detect:'拉伤检测', recover:'康复训练', warmup:'热身拉伸', strength:'力量训练', technique:'技术训练'},
+  l_level:'适合等级', level_all:'全部等级', l_video_url:'视频链接 (可选)', l_video_desc:'简介',
+  btn_add_video:'添加视频', existing_videos:'已有视频', empty_videos:'暂无视频，请在上方添加。',
+  form_add_feature:'发布新功能 / 公告', feature_sub:'会显示在用户首页顶部，用于宣布新功能、提醒或活动',
+  l_feature_title:'标题', l_feature_body:'内容', btn_publish:'发布',
+  published_content:'已发布内容', empty_features:'暂无发布内容。',
+  registered_users:'注册用户', empty_users:'暂无注册用户。', btn_delete:'删除',
+  source_label:'来源', level_label:'等级', profile_incomplete:'未完成资料',
+  goal_tag:{warm:'热身', strength:'力量', recover:'恢复', safety:'安全'},
+  goals:{
+    warm:[{t:'关节活动度激活',d:'脚踝、膝、髋环绕各 10 圈，唤醒关节灵活度。'},{t:'动态拉伸 8 分钟',d:'高抬腿、弓步走、侧向滑步，提升肌肉温度。'},{t:'核心激活训练',d:'平板支撑 3×30 秒，为冰上动作提供稳定支撑。'}],
+    strength:[{t:'下肢力量训练',d:'深蹲 3×12，单腿硬拉 3×10，强化跳跃落地能力。'},{t:'踝关节稳定性训练',d:'单脚站立平衡 3×30 秒，降低崴脚风险。'},{t:'核心与背部力量',d:'臀桥 3×15，鸟狗式 3×10，支持旋转与跳跃技术。'}],
+    recover:[{t:'拉伸放松 10 分钟',d:'大腿前后侧、小腿、髋屈肌静态拉伸各 30 秒。'},{t:'泡沫轴放松',d:'针对大腿、小腿肌群滚动放松，缓解训练后紧张。'},{t:'低强度有氧恢复',d:'快走或轻度骑行 15 分钟，促进血液循环。'}],
+    safety:[{t:'肌肉状态自检',d:'训练前用下方自测工具检查是否有疼痛或紧绷。'},{t:'冰面训练量控制',d:'注意单次跳跃练习不超过建议组数，避免过度使用。'},{t:'充分补水与休息',d:'保证训练间隙补水，两次高强度训练间隔 24 小时以上。'}]
+  },
+  seedVideos:[
+    {title:'踝关节拉伤：3 个自测动作',cat:'detect',level:'全部',desc:'通过三个简单动作初步判断踝关节是否拉伤。'},
+    {title:'大腿后侧肌群拉伤康复第一周',cat:'recover',level:'1-3年',desc:'低强度恢复动作，帮助减轻肿胀、恢复活动度。'},
+    {title:'冰上训练前 10 分钟热身',cat:'warmup',level:'不到1年',desc:'适合初学者的关节激活与动态拉伸组合。'},
+    {title:'跳跃落地缓冲力量训练',cat:'strength',level:'3-6年',desc:'加强落地稳定性，降低膝踝受伤风险。'},
+    {title:'髋部灵活性与旋转技术训练',cat:'technique',level:'6年以上',desc:'提升旋转轴心稳定性的进阶训练。'},
+    {title:'肌肉拉伤后何时可以回到冰上',cat:'detect',level:'全部',desc:'了解拉伤分级与安全复出的判断标准。'}
+  ],
+  exp_keys:['不到1年','1-3年','3-6年','6年以上'],
+  settings_title:'设置', settings_sub:'更新你的语言、资料与训练水平信息',
+  btn_settings:'设置', btn_save:'保存', btn_back_dash:'返回主页', l_set_lang:'界面语言',
+  l_hardest_jump:'你能完成的最难跳跃', jump:['尚未开始跳跃','华尔兹跳','单周跳','两周跳','三周跳','四周跳'],
+  l_spin_level:'你能完成的旋转水平', spin:['基础旋转（直立/平衡旋转）','进阶旋转（燕式/蹲踞旋转）','联合旋转（多姿态转换）','高级联合旋转（多次换脚+变化）'],
+  l_competitive_level:'比赛级别', comp:['无比赛经验','俱乐部级','地区级','全国级','国际级'],
+  l_field_test:'场地测试等级 (Moves in the Field)', field_test_not_started:'尚未参加'
+},
+"zh-TW": {
+  brand_sub:'肌肉拉傷檢測與恢復系統',
+  auth_title:'為花式滑冰運動員而生的\n肌肉拉傷檢測與恢復平台',
+  auth_sub:'每日自動生成訓練目標，配套檢測與恢復影片，幫助你安全、科學地保持狀態。',
+  tab_signin:'登入', tab_signup:'建立帳戶',
+  l_email:'電子郵件', l_password:'密碼', l_set_password:'設定密碼', ph_set_password:'至少 6 位', l_confirm_password:'確認密碼', ph_confirm_password:'再輸入一次',
+  btn_signin:'登入', btn_signup:'建立帳戶', auth_hint:'資料保存在你目前的瀏覽器中，用於示範完整流程。',
+  btn_change_lang:'切換語言',
+  err_fill_login:'請輸入電子郵件和密碼', err_wrong_credentials:'電子郵件或密碼不正確', err_fill_signup:'請填寫電子郵件和密碼',
+  err_password_short:'密碼至少需要 6 位', err_password_mismatch:'兩次輸入的密碼不一致',
+  err_admin_blocked:'此電子郵件不可用於註冊一般帳戶', err_already_registered:'此電子郵件已註冊，請直接登入',
+  onb1_title:'你從哪裡聽說 Figure Skating Lab？', onb1_sub:'幫助我們了解如何為你提供更合適的內容',
+  ref:['YouTube','Chrome 搜尋','TikTok','朋友 / 教練推薦','Instagram','其他'],
+  onb2_title:'設定暱稱與頭像', onb2_sub:'用來在系統中稱呼你', l_nickname:'暱稱', l_avatar:'選擇頭像',
+  onb3_title:'基本身體資訊', onb3_sub:'用於生成更貼合你的訓練目標與推薦',
+  l_age:'年齡', l_gender:'性別', gender:['女','男','不透露'], l_height:'身高 (cm)', l_weight:'體重 (kg)',
+  onb4_title:'你學習花式滑冰多久了？', onb4_sub:'決定訓練目標的強度與難度',
+  exp:['不到 1 年','1–3 年','3–6 年','6 年以上'],
+  onb_back:'上一步', onb_next:'下一步', onb_finish:'完成',
+  onb_err_referral:'請選擇一個來源', onb_err_nickname:'請輸入暱稱', onb_err_physical:'請填寫完整資訊', onb_err_exp:'請選擇練習年限',
+  hello_prefix:'你好，', today_goals_title:'今日訓練目標', goal_progress_tpl:'{done}/{total} 已完成',
+  self_check_title:'肌肉自我檢測', self_check_note:'非醫療診斷，僅供參考',
+  check_card_title:'你現在感覺怎麼樣？', check_card_sub:'回答以下問題，快速判斷拉傷風險等級',
+  l_q_pain:'疼痛程度', pain:['無痛','輕微痠痛','明顯疼痛','劇烈疼痛'],
+  l_q_swell:'是否有腫脹或瘀青', swell:['沒有','輕微','明顯'],
+  l_q_mobility:'活動受限程度', mobility:['正常活動','動作稍受限','無法正常發力'],
+  btn_view_result:'查看結果',
+  result_low_title:'風險較低', result_low_body:'目前狀態較好，可以按計劃進行熱身後訓練。訓練中如出現不適請立即停止。',
+  result_mid_title:'中度風險，建議謹慎', result_mid_body:'建議降低今日訓練強度，優先安排「恢復」分類影片中的拉伸與放鬆動作，並持續觀察 24-48 小時。若症狀未緩解，請諮詢專業人員。',
+  result_high_title:'較高風險，建議休息並就醫', result_high_body:'目前症狀提示可能存在明顯拉傷，建議暫停冰上訓練，進行休息、冰敷，並盡快諮詢醫生或運動醫學專業人員，避免二次損傷。',
+  disclaimer:'此工具僅提供一般性建議，不能替代專業醫療診斷。如果疼痛劇烈、持續或伴隨明顯腫脹，請盡快諮詢醫生或運動醫學專業人員。',
+  recommended_videos_title:'為你推薦的影片', vid_count_tpl:'{n} 個符合你的等級', watch_link:'觀看 →', coming_soon:'即將上線',
+  logout:'登出',
+  admin_badge:'⚙ 管理後台', stat_video_count:'影片總數', stat_user_count:'註冊用戶數',
+  tab_videos:'影片管理', tab_feature:'功能 / 公告', tab_users:'用戶列表',
+  form_add_video:'新增影片', l_title:'標題', l_category:'分類',
+  cat:{detect:'拉傷檢測', recover:'康復訓練', warmup:'熱身拉伸', strength:'力量訓練', technique:'技術訓練'},
+  l_level:'適合等級', level_all:'全部等級', l_video_url:'影片連結 (可選)', l_video_desc:'簡介',
+  btn_add_video:'新增影片', existing_videos:'已有影片', empty_videos:'暫無影片，請在上方新增。',
+  form_add_feature:'發布新功能 / 公告', feature_sub:'會顯示在用戶首頁頂部，用於宣布新功能、提醒或活動',
+  l_feature_title:'標題', l_feature_body:'內容', btn_publish:'發布',
+  published_content:'已發布內容', empty_features:'暫無發布內容。',
+  registered_users:'註冊用戶', empty_users:'暫無註冊用戶。', btn_delete:'刪除',
+  source_label:'來源', level_label:'等級', profile_incomplete:'未完成資料',
+  goal_tag:{warm:'熱身', strength:'力量', recover:'恢復', safety:'安全'},
+  goals:{
+    warm:[{t:'關節活動度激活',d:'腳踝、膝、髖環繞各 10 圈，喚醒關節靈活度。'},{t:'動態拉伸 8 分鐘',d:'高抬腿、弓步走、側向滑步，提升肌肉溫度。'},{t:'核心激活訓練',d:'平板支撐 3×30 秒，為冰上動作提供穩定支撐。'}],
+    strength:[{t:'下肢力量訓練',d:'深蹲 3×12，單腿硬舉 3×10，強化跳躍落地能力。'},{t:'踝關節穩定性訓練',d:'單腳站立平衡 3×30 秒，降低扭傷風險。'},{t:'核心與背部力量',d:'臀橋 3×15，鳥狗式 3×10，支持旋轉與跳躍技術。'}],
+    recover:[{t:'拉伸放鬆 10 分鐘',d:'大腿前後側、小腿、髖屈肌靜態拉伸各 30 秒。'},{t:'泡沫軸放鬆',d:'針對大腿、小腿肌群滾動放鬆，緩解訓練後緊張。'},{t:'低強度有氧恢復',d:'快走或輕度騎行 15 分鐘，促進血液循環。'}],
+    safety:[{t:'肌肉狀態自檢',d:'訓練前用下方自測工具檢查是否有疼痛或緊繃。'},{t:'冰面訓練量控制',d:'注意單次跳躍練習不超過建議組數，避免過度使用。'},{t:'充分補水與休息',d:'保證訓練間隙補水，兩次高強度訓練間隔 24 小時以上。'}]
+  },
+  seedVideos:[
+    {title:'踝關節拉傷：3 個自測動作',cat:'detect',level:'全部',desc:'透過三個簡單動作初步判斷踝關節是否拉傷。'},
+    {title:'大腿後側肌群拉傷康復第一週',cat:'recover',level:'1-3年',desc:'低強度恢復動作，幫助減輕腫脹、恢復活動度。'},
+    {title:'冰上訓練前 10 分鐘熱身',cat:'warmup',level:'不到1年',desc:'適合初學者的關節激活與動態拉伸組合。'},
+    {title:'跳躍落地緩衝力量訓練',cat:'strength',level:'3-6年',desc:'加強落地穩定性，降低膝踝受傷風險。'},
+    {title:'髖部靈活性與旋轉技術訓練',cat:'technique',level:'6年以上',desc:'提升旋轉軸心穩定性的進階訓練。'},
+    {title:'肌肉拉傷後何時可以回到冰上',cat:'detect',level:'全部',desc:'了解拉傷分級與安全復出的判斷標準。'}
+  ],
+  exp_keys:['不到1年','1-3年','3-6年','6年以上'],
+  settings_title:'設定', settings_sub:'更新你的語言、資料與訓練水準資訊',
+  btn_settings:'設定', btn_save:'儲存', btn_back_dash:'返回首頁', l_set_lang:'介面語言',
+  l_hardest_jump:'你能完成的最難跳躍', jump:['尚未開始跳躍','華爾滋跳','單周跳','兩周跳','三周跳','四周跳'],
+  l_spin_level:'你能完成的旋轉水準', spin:['基礎旋轉（直立/平衡旋轉）','進階旋轉（燕式/蹲踞旋轉）','聯合旋轉（多姿態轉換）','高級聯合旋轉（多次換腳+變化）'],
+  l_competitive_level:'比賽級別', comp:['無比賽經驗','俱樂部級','地區級','全國級','國際級'],
+  l_field_test:'場地測試等級 (Moves in the Field)', field_test_not_started:'尚未參加'
+},
+"en": {
+  brand_sub:'Muscle Strain Detection & Recovery System',
+  auth_title:'Muscle-Strain Detection & Recovery Platform, Built for Figure Skaters',
+  auth_sub:'Personalized daily training goals plus detection and recovery videos, to help you stay in shape safely.',
+  tab_signin:'Sign In', tab_signup:'Create Account',
+  l_email:'Email', l_password:'Password', l_set_password:'Set Password', ph_set_password:'At least 6 characters', l_confirm_password:'Confirm Password', ph_confirm_password:'Enter it again',
+  btn_signin:'Sign In', btn_signup:'Create Account', auth_hint:'Data is stored in your current browser, to demonstrate the full flow.',
+  btn_change_lang:'Change language',
+  err_fill_login:'Please enter your email and password', err_wrong_credentials:'Incorrect email or password', err_fill_signup:'Please fill in your email and password',
+  err_password_short:'Password must be at least 6 characters', err_password_mismatch:'Passwords do not match',
+  err_admin_blocked:"This email can't be used for a regular account", err_already_registered:'This email is already registered — please sign in',
+  onb1_title:'Where did you hear about Figure Skating Lab?', onb1_sub:'This helps us tailor content for you',
+  ref:['YouTube','Chrome Search','TikTok','Friend / Coach','Instagram','Other'],
+  onb2_title:'Set your nickname and avatar', onb2_sub:'Used to address you in the system', l_nickname:'Nickname', l_avatar:'Choose an avatar',
+  onb3_title:'Basic physical info', onb3_sub:'Used to generate goals and recommendations tailored to you',
+  l_age:'Age', l_gender:'Gender', gender:['Female','Male','Prefer not to say'], l_height:'Height (cm)', l_weight:'Weight (kg)',
+  onb4_title:'How long have you practiced figure skating?', onb4_sub:'This sets the intensity and difficulty of your training goals',
+  exp:['Under 1 year','1–3 years','3–6 years','6+ years'],
+  onb_back:'Back', onb_next:'Next', onb_finish:'Finish',
+  onb_err_referral:'Please choose a source', onb_err_nickname:'Please enter a nickname', onb_err_physical:'Please fill in all fields', onb_err_exp:'Please choose your experience level',
+  hello_prefix:'Hello, ', today_goals_title:"Today's Training Goals", goal_progress_tpl:'{done}/{total} completed',
+  self_check_title:'Self Muscle Check', self_check_note:'Not a medical diagnosis — for reference only',
+  check_card_title:'How are you feeling right now?', check_card_sub:'Answer the questions below for a quick strain-risk check',
+  l_q_pain:'Pain level', pain:['No pain','Mild soreness','Noticeable pain','Severe pain'],
+  l_q_swell:'Swelling or bruising', swell:['None','Mild','Noticeable'],
+  l_q_mobility:'Range-of-motion limitation', mobility:['Normal movement','Slightly limited',"Can't engage normally"],
+  btn_view_result:'View Result',
+  result_low_title:'Low risk', result_low_body:"You're in good shape — proceed with training after warming up. Stop immediately if discomfort occurs.",
+  result_mid_title:'Moderate risk — proceed with caution', result_mid_body:"Consider lowering today's training intensity and prioritize the stretching/recovery videos. Keep observing for 24–48 hours. See a professional if symptoms persist.",
+  result_high_title:'High risk — rest and seek medical care', result_high_body:'Your symptoms suggest a possible significant strain. Consider pausing on-ice training, rest, apply ice, and consult a doctor or sports-medicine professional soon to avoid further injury.',
+  disclaimer:'This tool offers general guidance only and cannot replace a professional medical diagnosis. If pain is severe, persistent, or comes with noticeable swelling, please consult a doctor or sports-medicine professional as soon as possible.',
+  recommended_videos_title:'Recommended For You', vid_count_tpl:'{n} matched to your level', watch_link:'Watch →', coming_soon:'Coming soon',
+  logout:'Log out',
+  admin_badge:'⚙ Admin Dashboard', stat_video_count:'Total Videos', stat_user_count:'Registered Users',
+  tab_videos:'Manage Videos', tab_feature:'Features / Announcements', tab_users:'User List',
+  form_add_video:'Add a New Video', l_title:'Title', l_category:'Category',
+  cat:{detect:'Strain Detection', recover:'Recovery Training', warmup:'Warm-up & Stretch', strength:'Strength Training', technique:'Technique Training'},
+  l_level:'Suitable Level', level_all:'All levels', l_video_url:'Video link (optional)', l_video_desc:'Description',
+  btn_add_video:'Add Video', existing_videos:'Existing Videos', empty_videos:'No videos yet — add one above.',
+  form_add_feature:'Publish a Feature / Announcement', feature_sub:"Shown at the top of users' home page — for new features, reminders, or events",
+  l_feature_title:'Title', l_feature_body:'Content', btn_publish:'Publish',
+  published_content:'Published Content', empty_features:'Nothing published yet.',
+  registered_users:'Registered Users', empty_users:'No registered users yet.', btn_delete:'Delete',
+  source_label:'Source', level_label:'Level', profile_incomplete:'Profile incomplete',
+  goal_tag:{warm:'Warm-up', strength:'Strength', recover:'Recovery', safety:'Safety'},
+  goals:{
+    warm:[{t:'Joint Mobility Activation',d:'10 circles each for ankles, knees, hips to wake up joint mobility.'},{t:'8-Minute Dynamic Stretch',d:'High knees, lunge walks, lateral slides to raise muscle temperature.'},{t:'Core Activation',d:'Plank 3×30s to build stability for on-ice movements.'}],
+    strength:[{t:'Lower Body Strength',d:'Squats 3×12, single-leg deadlifts 3×10 to strengthen jump landings.'},{t:'Ankle Stability Training',d:'Single-leg balance 3×30s to reduce ankle-sprain risk.'},{t:'Core & Back Strength',d:'Glute bridges 3×15, bird-dogs 3×10 to support rotation and jump technique.'}],
+    recover:[{t:'10-Minute Stretch & Release',d:'Static stretches for front/back thigh, calf, and hip flexors, 30s each.'},{t:'Foam Rolling',d:'Roll out thighs and calves to release post-training tightness.'},{t:'Light Aerobic Recovery',d:'15 minutes of brisk walking or easy cycling to boost circulation.'}],
+    safety:[{t:'Muscle Self-Check',d:'Use the self-check tool below before training to check for pain or tightness.'},{t:'Manage Ice-Time Volume',d:'Keep jump-practice sets within recommended limits to avoid overuse.'},{t:'Hydration & Rest',d:'Stay hydrated during breaks; leave 24+ hours between intense sessions.'}]
+  },
+  seedVideos:[
+    {title:'Ankle Strain: 3 Self-Test Moves',cat:'detect',level:'全部',desc:'Three simple movements to get an initial read on a possible ankle strain.'},
+    {title:'Hamstring Strain Recovery — Week 1',cat:'recover',level:'1-3年',desc:'Low-intensity recovery movements to reduce swelling and restore range of motion.'},
+    {title:'10-Minute Pre-Ice Warm-Up',cat:'warmup',level:'不到1年',desc:'A joint-activation and dynamic-stretch routine suited for beginners.'},
+    {title:'Jump-Landing Absorption Strength',cat:'strength',level:'3-6年',desc:'Build landing stability to lower knee and ankle injury risk.'},
+    {title:'Hip Mobility & Rotation Technique',cat:'technique',level:'6年以上',desc:'Advanced training to improve rotational-axis stability.'},
+    {title:'When Can You Return to the Ice After a Strain',cat:'detect',level:'全部',desc:'Understand strain grading and the criteria for a safe return.'}
+  ],
+  exp_keys:['不到1年','1-3年','3-6年','6年以上'],
+  settings_title:'Settings', settings_sub:'Update your language, profile, and skill level',
+  btn_settings:'Settings', btn_save:'Save', btn_back_dash:'Back to Home', l_set_lang:'Interface Language',
+  l_hardest_jump:'Hardest jump you can land', jump:['Not jumping yet','Waltz jump','Single jump','Double jump','Triple jump','Quad jump'],
+  l_spin_level:'Spin level you can perform', spin:['Basic spin (upright / arabesque)','Advanced spin (camel / sit spin)','Combination spin (multiple positions)','Advanced combo (multi-position with foot changes)'],
+  l_competitive_level:'Competitive level', comp:['No competition experience','Club level','Regional level','National level','International level'],
+  l_field_test:'Moves in the Field test level', field_test_not_started:'Not taken yet'
+},
+"ja": {
+  brand_sub:'筋肉損傷の検出とリカバリーシステム',
+  auth_title:'フィギュアスケーターのための\n筋肉損傷検出・リカバリープラットフォーム',
+  auth_sub:'毎日自動生成されるトレーニング目標と、検出・リカバリー動画で、安全かつ科学的にコンディションを維持。',
+  tab_signin:'ログイン', tab_signup:'アカウント作成',
+  l_email:'メールアドレス', l_password:'パスワード', l_set_password:'パスワードを設定', ph_set_password:'6文字以上', l_confirm_password:'パスワード（確認）', ph_confirm_password:'もう一度入力',
+  btn_signin:'ログイン', btn_signup:'アカウント作成', auth_hint:'データはお使いのブラウザ内に保存され、全体の流れを体験できます。',
+  btn_change_lang:'言語を変更',
+  err_fill_login:'メールアドレスとパスワードを入力してください', err_wrong_credentials:'メールアドレスまたはパスワードが正しくありません', err_fill_signup:'メールアドレスとパスワードを入力してください',
+  err_password_short:'パスワードは6文字以上にしてください', err_password_mismatch:'パスワードが一致しません',
+  err_admin_blocked:'このメールアドレスは一般アカウント登録には使用できません', err_already_registered:'このメールアドレスは既に登録されています。ログインしてください',
+  onb1_title:'Figure Skating Lab をどこで知りましたか？', onb1_sub:'より適したコンテンツを提供するために利用します',
+  ref:['YouTube','Chrome 検索','TikTok','友人・コーチの紹介','Instagram','その他'],
+  onb2_title:'ニックネームとアバターを設定', onb2_sub:'システム内での呼び名として使用します', l_nickname:'ニックネーム', l_avatar:'アバターを選択',
+  onb3_title:'基本的な身体情報', onb3_sub:'あなたに合った目標とおすすめを生成するために使用します',
+  l_age:'年齢', l_gender:'性別', gender:['女性','男性','回答しない'], l_height:'身長 (cm)', l_weight:'体重 (kg)',
+  onb4_title:'フィギュアスケート歴はどれくらいですか？', onb4_sub:'トレーニング目標の強度と難易度を決定します',
+  exp:['1年未満','1〜3年','3〜6年','6年以上'],
+  onb_back:'戻る', onb_next:'次へ', onb_finish:'完了',
+  onb_err_referral:'項目を選択してください', onb_err_nickname:'ニックネームを入力してください', onb_err_physical:'すべての項目を入力してください', onb_err_exp:'経験年数を選択してください',
+  hello_prefix:'こんにちは、', today_goals_title:'今日のトレーニング目標', goal_progress_tpl:'{done}/{total} 完了',
+  self_check_title:'筋肉セルフチェック', self_check_note:'医療診断ではありません。参考情報です',
+  check_card_title:'今の体調はいかがですか？', check_card_sub:'以下の質問に答えて、損傷リスクを簡易チェック',
+  l_q_pain:'痛みの程度', pain:['痛みなし','軽い痛み','はっきりした痛み','激しい痛み'],
+  l_q_swell:'腫れやあざの有無', swell:['なし','軽度','明らか'],
+  l_q_mobility:'可動域の制限', mobility:['通常通り動ける','やや制限あり','正常に力が入らない'],
+  btn_view_result:'結果を見る',
+  result_low_title:'リスクは低めです', result_low_body:'現在の状態は良好です。ウォームアップ後、予定通りトレーニングを行えます。違和感が出たらすぐに中止してください。',
+  result_mid_title:'中程度のリスク：注意が必要です', result_mid_body:'今日はトレーニング強度を下げ、「リカバリー」カテゴリのストレッチ・リラックス動画を優先してください。24〜48時間は経過を観察し、症状が改善しない場合は専門家に相談してください。',
+  result_high_title:'リスクが高めです：休養し受診を', result_high_body:'現在の症状は明らかな損傷の可能性を示しています。氷上トレーニングを中止し、安静・アイシングを行い、なるべく早く医師またはスポーツ医学の専門家に相談してください。',
+  disclaimer:'このツールは一般的な目安であり、専門的な医療診断に代わるものではありません。痛みが激しい、持続する、明らかな腫れを伴う場合は、なるべく早く医師またはスポーツ医学の専門家にご相談ください。',
+  recommended_videos_title:'あなたへのおすすめ動画', vid_count_tpl:'あなたのレベルに合った動画 {n} 本', watch_link:'視聴する →', coming_soon:'近日公開',
+  logout:'ログアウト',
+  admin_badge:'⚙ 管理者ダッシュボード', stat_video_count:'動画総数', stat_user_count:'登録ユーザー数',
+  tab_videos:'動画管理', tab_feature:'機能 / お知らせ', tab_users:'ユーザー一覧',
+  form_add_video:'新しい動画を追加', l_title:'タイトル', l_category:'カテゴリー',
+  cat:{detect:'損傷検出', recover:'リカバリートレーニング', warmup:'ウォームアップ・ストレッチ', strength:'筋力トレーニング', technique:'技術トレーニング'},
+  l_level:'対象レベル', level_all:'全レベル', l_video_url:'動画リンク（任意）', l_video_desc:'説明',
+  btn_add_video:'動画を追加', existing_videos:'登録済みの動画', empty_videos:'まだ動画がありません。上のフォームから追加してください。',
+  form_add_feature:'新機能・お知らせを公開', feature_sub:'ユーザーのホーム画面上部に表示されます。新機能やリマインダー、イベントの告知に利用できます',
+  l_feature_title:'タイトル', l_feature_body:'内容', btn_publish:'公開',
+  published_content:'公開済みのコンテンツ', empty_features:'まだ公開されたコンテンツはありません。',
+  registered_users:'登録ユーザー', empty_users:'まだ登録ユーザーがいません。', btn_delete:'削除',
+  source_label:'流入経路', level_label:'レベル', profile_incomplete:'プロフィール未完了',
+  goal_tag:{warm:'ウォームアップ', strength:'筋力', recover:'リカバリー', safety:'安全'},
+  goals:{
+    warm:[{t:'関節可動域の活性化',d:'足首・膝・股関節をそれぞれ10回ずつ回して可動域を目覚めさせます。'},{t:'8分間のダイナミックストレッチ',d:'ハイニー、ランジウォーク、サイドスライドで筋温を高めます。'},{t:'コア activation',d:'プランク3セット×30秒で氷上動作を支える安定性を養います。'}],
+    strength:[{t:'下半身の筋力トレーニング',d:'スクワット3×12、片脚デッドリフト3×10でジャンプの着地を強化。'},{t:'足首の安定性トレーニング',d:'片脚立ちバランス3×30秒で捻挫リスクを軽減。'},{t:'体幹・背部の強化',d:'グルートブリッジ3×15、バードドッグ3×10で回転とジャンプ技術をサポート。'}],
+    recover:[{t:'10分間のストレッチ＆リリース',d:'太もも前後・ふくらはぎ・股関節屈筋を各30秒ずつ静的ストレッチ。'},{t:'フォームローラーでのリリース',d:'太ももとふくらはぎをほぐし、トレーニング後の張りを軽減。'},{t:'軽い有酸素リカバリー',d:'早歩きや軽い自転車15分で血行を促進。'}],
+    safety:[{t:'筋肉のセルフチェック',d:'トレーニング前に下のセルフチェックツールで痛みや張りを確認。'},{t:'氷上練習量の管理',d:'ジャンプ練習のセット数を推奨範囲内に抑え、使いすぎを防ぐ。'},{t:'水分補給と休養',d:'休憩中はしっかり水分補給し、高強度練習の間隔を24時間以上あける。'}]
+  },
+  seedVideos:[
+    {title:'足首の損傷：3つのセルフテスト',cat:'detect',level:'全部',desc:'3つの簡単な動作で足首損傷の可能性を初期チェック。'},
+    {title:'ハムストリング損傷リカバリー：1週目',cat:'recover',level:'1-3年',desc:'腫れを抑え可動域を取り戻す低強度のリカバリー動作。'},
+    {title:'氷上前10分間のウォームアップ',cat:'warmup',level:'不到1年',desc:'初心者向けの関節活性化＆ダイナミックストレッチの組み合わせ。'},
+    {title:'ジャンプ着地の衝撃吸収トレーニング',cat:'strength',level:'3-6年',desc:'着地の安定性を高め、膝・足首のケガのリスクを軽減。'},
+    {title:'股関節の柔軟性と回転技術トレーニング',cat:'technique',level:'6年以上',desc:'回転軸の安定性を高める上級者向けトレーニング。'},
+    {title:'損傷後、いつ氷上に戻れるか',cat:'detect',level:'全部',desc:'損傷のグレードと安全な復帰の目安を理解する。'}
+  ],
+  exp_keys:['不到1年','1-3年','3-6年','6年以上'],
+  settings_title:'設定', settings_sub:'言語・プロフィール・スキルレベルを更新できます',
+  btn_settings:'設定', btn_save:'保存', btn_back_dash:'ホームに戻る', l_set_lang:'表示言語',
+  l_hardest_jump:'跳べる最も難しいジャンプ', jump:['まだジャンプしていない','ワルツジャンプ','シングルジャンプ','ダブルジャンプ','トリプルジャンプ','クワッドジャンプ'],
+  l_spin_level:'できるスピンのレベル', spin:['基本スピン（アップライト/アラベスク）','応用スピン（キャメル/シット）','コンビネーションスピン（複数姿勢）','上級コンビネーション（足換え+姿勢変化）'],
+  l_competitive_level:'競技レベル', comp:['大会経験なし','クラブレベル','地区レベル','全国レベル','国際レベル'],
+  l_field_test:'ムーブス・イン・ザ・フィールド（MITF）テストレベル', field_test_not_started:'まだ受けていない'
+},
+"ko": {
+  brand_sub:'근육 부상 감지 및 회복 시스템',
+  auth_title:'피겨 스케이터를 위한\n근육 부상 감지 및 회복 플랫폼',
+  auth_sub:'매일 자동으로 생성되는 훈련 목표와 감지·회복 동영상으로 안전하고 과학적으로 컨디션을 유지하세요.',
+  tab_signin:'로그인', tab_signup:'계정 만들기',
+  l_email:'이메일', l_password:'비밀번호', l_set_password:'비밀번호 설정', ph_set_password:'6자 이상', l_confirm_password:'비밀번호 확인', ph_confirm_password:'다시 입력하세요',
+  btn_signin:'로그인', btn_signup:'계정 만들기', auth_hint:'데이터는 현재 브라우저에 저장되며, 전체 흐름을 시연하기 위한 것입니다.',
+  btn_change_lang:'언어 변경',
+  err_fill_login:'이메일과 비밀번호를 입력하세요', err_wrong_credentials:'이메일 또는 비밀번호가 올바르지 않습니다', err_fill_signup:'이메일과 비밀번호를 입력하세요',
+  err_password_short:'비밀번호는 6자 이상이어야 합니다', err_password_mismatch:'비밀번호가 일치하지 않습니다',
+  err_admin_blocked:'이 이메일은 일반 계정 등록에 사용할 수 없습니다', err_already_registered:'이미 등록된 이메일입니다. 로그인해 주세요',
+  onb1_title:'Figure Skating Lab을 어디서 알게 되셨나요?', onb1_sub:'더 적합한 콘텐츠를 제공하는 데 도움이 됩니다',
+  ref:['YouTube','Chrome 검색','TikTok','친구/코치 추천','Instagram','기타'],
+  onb2_title:'닉네임과 아바타 설정', onb2_sub:'시스템에서 사용자를 부르는 이름입니다', l_nickname:'닉네임', l_avatar:'아바타 선택',
+  onb3_title:'기본 신체 정보', onb3_sub:'맞춤 목표와 추천을 생성하는 데 사용됩니다',
+  l_age:'나이', l_gender:'성별', gender:['여성','남성','밝히지 않음'], l_height:'키 (cm)', l_weight:'몸무게 (kg)',
+  onb4_title:'피겨 스케이팅을 얼마나 오래 배우셨나요?', onb4_sub:'훈련 목표의 강도와 난이도를 결정합니다',
+  exp:['1년 미만','1–3년','3–6년','6년 이상'],
+  onb_back:'이전', onb_next:'다음', onb_finish:'완료',
+  onb_err_referral:'하나를 선택해 주세요', onb_err_nickname:'닉네임을 입력해 주세요', onb_err_physical:'모든 항목을 입력해 주세요', onb_err_exp:'경력을 선택해 주세요',
+  hello_prefix:'안녕하세요, ', today_goals_title:'오늘의 훈련 목표', goal_progress_tpl:'{done}/{total} 완료',
+  self_check_title:'근육 자가 점검', self_check_note:'의학적 진단이 아니며 참고용입니다',
+  check_card_title:'지금 컨디션은 어떠신가요?', check_card_sub:'아래 질문에 답하면 부상 위험도를 빠르게 확인할 수 있습니다',
+  l_q_pain:'통증 정도', pain:['통증 없음','가벼운 통증','뚜렷한 통증','심한 통증'],
+  l_q_swell:'붓기 또는 멍', swell:['없음','경미함','뚜렷함'],
+  l_q_mobility:'가동 범위 제한', mobility:['정상적으로 움직임','약간 제한됨','정상적으로 힘을 줄 수 없음'],
+  btn_view_result:'결과 보기',
+  result_low_title:'위험도 낮음', result_low_body:'현재 컨디션이 양호합니다. 워밍업 후 계획대로 훈련을 진행하세요. 불편함이 느껴지면 즉시 중단하세요.',
+  result_mid_title:'중간 위험도 — 주의가 필요합니다', result_mid_body:'오늘은 훈련 강도를 낮추고 "회복" 카테고리의 스트레칭·이완 동영상을 우선 진행하세요. 24–48시간 동안 경과를 지켜보고, 증상이 호전되지 않으면 전문가와 상담하세요.',
+  result_high_title:'높은 위험도 — 휴식 후 병원 방문 권장', result_high_body:'현재 증상은 뚜렷한 부상 가능성을 나타냅니다. 빙상 훈련을 중단하고 휴식과 냉찜질을 하며, 2차 손상을 막기 위해 가능한 한 빨리 의사나 스포츠 의학 전문가와 상담하세요.',
+  disclaimer:'이 도구는 일반적인 가이드만 제공하며 전문적인 의학적 진단을 대체할 수 없습니다. 통증이 심하거나 지속되거나 뚜렷한 붓기가 동반되면 가능한 한 빨리 의사나 스포츠 의학 전문가와 상담하세요.',
+  recommended_videos_title:'맞춤 추천 동영상', vid_count_tpl:'회원님 등급에 맞는 동영상 {n}개', watch_link:'시청하기 →', coming_soon:'출시 예정',
+  logout:'로그아웃',
+  admin_badge:'⚙ 관리자 대시보드', stat_video_count:'전체 동영상 수', stat_user_count:'등록 사용자 수',
+  tab_videos:'동영상 관리', tab_feature:'기능 / 공지', tab_users:'사용자 목록',
+  form_add_video:'새 동영상 추가', l_title:'제목', l_category:'카테고리',
+  cat:{detect:'부상 감지', recover:'회복 훈련', warmup:'워밍업·스트레칭', strength:'근력 훈련', technique:'기술 훈련'},
+  l_level:'적합 등급', level_all:'전체 등급', l_video_url:'동영상 링크 (선택)', l_video_desc:'설명',
+  btn_add_video:'동영상 추가', existing_videos:'등록된 동영상', empty_videos:'아직 동영상이 없습니다. 위에서 추가해 주세요.',
+  form_add_feature:'새 기능 / 공지 게시', feature_sub:'사용자 홈 화면 상단에 표시되며, 신기능·알림·이벤트 안내에 사용됩니다',
+  l_feature_title:'제목', l_feature_body:'내용', btn_publish:'게시',
+  published_content:'게시된 콘텐츠', empty_features:'아직 게시된 콘텐츠가 없습니다.',
+  registered_users:'등록된 사용자', empty_users:'아직 등록된 사용자가 없습니다.', btn_delete:'삭제',
+  source_label:'유입 경로', level_label:'등급', profile_incomplete:'프로필 미완성',
+  goal_tag:{warm:'워밍업', strength:'근력', recover:'회복', safety:'안전'},
+  goals:{
+    warm:[{t:'관절 가동성 활성화',d:'발목·무릎·엉덩이 각 10회 회전으로 관절 가동성을 깨웁니다.'},{t:'8분 다이나믹 스트레칭',d:'하이니, 런지 워크, 사이드 슬라이드로 근육 온도를 높입니다.'},{t:'코어 활성화 훈련',d:'플랭크 3×30초로 빙상 동작을 위한 안정성을 기릅니다.'}],
+    strength:[{t:'하체 근력 훈련',d:'스쿼트 3×12, 한 다리 데드리프트 3×10으로 점프 착지력을 강화합니다.'},{t:'발목 안정성 훈련',d:'한 다리 균형 잡기 3×30초로 발목 부상 위험을 줄입니다.'},{t:'코어·등 근력 훈련',d:'글루트 브릿지 3×15, 버드독 3×10으로 회전과 점프 기술을 뒷받침합니다.'}],
+    recover:[{t:'10분 스트레칭 & 이완',d:'허벅지 앞뒤, 종아리, 고관절 굴곡근을 각 30초씩 정적 스트레칭.'},{t:'폼롤러 이완',d:'허벅지와 종아리를 풀어 훈련 후 긴장을 완화합니다.'},{t:'가벼운 유산소 회복',d:'빠르게 걷기 또는 가벼운 자전거 타기 15분으로 혈액순환을 촉진합니다.'}],
+    safety:[{t:'근육 자가 점검',d:'훈련 전 아래 자가 점검 도구로 통증이나 긴장을 확인합니다.'},{t:'빙상 훈련량 관리',d:'점프 연습 세트 수를 권장 범위 내로 유지해 과사용을 방지합니다.'},{t:'수분 보충과 휴식',d:'휴식 중 충분히 수분을 보충하고, 고강도 훈련 사이 24시간 이상 간격을 둡니다.'}]
+  },
+  seedVideos:[
+    {title:'발목 부상: 3가지 자가 테스트 동작',cat:'detect',level:'全部',desc:'세 가지 간단한 동작으로 발목 부상 가능성을 초기 확인합니다.'},
+    {title:'햄스트링 부상 회복 1주차',cat:'recover',level:'1-3年',desc:'붓기를 줄이고 가동 범위를 회복하는 저강도 회복 동작.'},
+    {title:'빙상 훈련 전 10분 워밍업',cat:'warmup',level:'不到1年',desc:'초보자에게 적합한 관절 활성화 및 다이나믹 스트레칭 루틴.'},
+    {title:'점프 착지 충격 흡수 근력 훈련',cat:'strength',level:'3-6年',desc:'착지 안정성을 높여 무릎·발목 부상 위험을 낮춥니다.'},
+    {title:'고관절 가동성 및 회전 기술 훈련',cat:'technique',level:'6年以上',desc:'회전축 안정성을 높이는 상급자용 훈련.'},
+    {title:'부상 후 언제 빙상으로 복귀할 수 있을까',cat:'detect',level:'全部',desc:'부상 등급과 안전한 복귀 기준을 이해합니다.'}
+  ],
+  exp_keys:['不到1年','1-3年','3-6年','6年以上'],
+  settings_title:'설정', settings_sub:'언어, 프로필, 실력 수준을 업데이트하세요',
+  btn_settings:'설정', btn_save:'저장', btn_back_dash:'홈으로 돌아가기', l_set_lang:'화면 언어',
+  l_hardest_jump:'뛸 수 있는 가장 어려운 점프', jump:['아직 점프 안 함','왈츠 점프','싱글 점프','더블 점프','트리플 점프','쿼드 점프'],
+  l_spin_level:'할 수 있는 스핀 수준', spin:['기본 스핀 (업라이트/애러베스크)','응용 스핀 (카멜/싯 스핀)','콤비네이션 스핀 (여러 자세)','고급 콤비네이션 (발 바꾸기+자세 변화)'],
+  l_competitive_level:'경기 수준', comp:['대회 경험 없음','클럽 레벨','지역 레벨','전국 레벨','국제 레벨'],
+  l_field_test:'무브스 인 더 필드(MITF) 테스트 레벨', field_test_not_started:'아직 응시 안 함'
+},
+"fr": {
+  brand_sub:'Détection et récupération des lésions musculaires',
+  auth_title:'Plateforme de détection et de récupération\ndes lésions musculaires pour patineurs artistiques',
+  auth_sub:'Des objectifs d\u2019entraînement générés chaque jour, avec des vidéos de détection et de récupération, pour progresser en toute sécurité.',
+  tab_signin:'Connexion', tab_signup:'Créer un compte',
+  l_email:'E-mail', l_password:'Mot de passe', l_set_password:'Définir un mot de passe', ph_set_password:'6 caractères minimum', l_confirm_password:'Confirmer le mot de passe', ph_confirm_password:'Saisissez-le à nouveau',
+  btn_signin:'Se connecter', btn_signup:'Créer un compte', auth_hint:'Les données sont enregistrées dans votre navigateur actuel, pour démontrer le parcours complet.',
+  btn_change_lang:'Changer de langue',
+  err_fill_login:'Veuillez saisir votre e-mail et votre mot de passe', err_wrong_credentials:'E-mail ou mot de passe incorrect', err_fill_signup:'Veuillez saisir votre e-mail et votre mot de passe',
+  err_password_short:'Le mot de passe doit contenir au moins 6 caractères', err_password_mismatch:'Les mots de passe ne correspondent pas',
+  err_admin_blocked:'Cet e-mail ne peut pas être utilisé pour un compte standard', err_already_registered:'Cet e-mail est déjà enregistré, veuillez vous connecter',
+  onb1_title:'Où avez-vous entendu parler de Figure Skating Lab\u202f?', onb1_sub:'Cela nous aide à vous proposer un contenu plus adapté',
+  ref:['YouTube','Recherche Chrome','TikTok','Ami / entraîneur','Instagram','Autre'],
+  onb2_title:'Choisissez un pseudo et un avatar', onb2_sub:'Utilisé pour vous nommer dans le système', l_nickname:'Pseudo', l_avatar:'Choisissez un avatar',
+  onb3_title:'Informations physiques de base', onb3_sub:'Utilisées pour générer des objectifs et recommandations adaptés',
+  l_age:'Âge', l_gender:'Genre', gender:['Femme','Homme','Je préfère ne pas dire'], l_height:'Taille (cm)', l_weight:'Poids (kg)',
+  onb4_title:'Depuis combien de temps pratiquez-vous le patinage artistique\u202f?', onb4_sub:'Cela détermine l\u2019intensité et la difficulté de vos objectifs',
+  exp:['Moins d\u20191 an','1 à 3 ans','3 à 6 ans','Plus de 6 ans'],
+  onb_back:'Précédent', onb_next:'Suivant', onb_finish:'Terminer',
+  onb_err_referral:'Veuillez choisir une source', onb_err_nickname:'Veuillez saisir un pseudo', onb_err_physical:'Veuillez remplir tous les champs', onb_err_exp:'Veuillez choisir votre niveau d\u2019expérience',
+  hello_prefix:'Bonjour, ', today_goals_title:"Objectifs d\u2019entraînement du jour", goal_progress_tpl:'{done}/{total} terminés',
+  self_check_title:'Auto-évaluation musculaire', self_check_note:'Ceci n\u2019est pas un diagnostic médical — à titre indicatif',
+  check_card_title:'Comment vous sentez-vous en ce moment\u202f?', check_card_sub:'Répondez aux questions ci-dessous pour évaluer rapidement le risque de lésion',
+  l_q_pain:'Niveau de douleur', pain:['Aucune douleur','Légère gêne','Douleur nette','Douleur intense'],
+  l_q_swell:'Gonflement ou ecchymose', swell:['Aucun','Léger','Net'],
+  l_q_mobility:"Limitation de l\u2019amplitude de mouvement", mobility:['Mouvement normal','Légèrement limité',"Impossible de forcer normalement"],
+  btn_view_result:'Voir le résultat',
+  result_low_title:'Risque faible', result_low_body:"Vous êtes en bonne condition. Vous pouvez vous entraîner comme prévu après l\u2019échauffement. Arrêtez immédiatement en cas de gêne.",
+  result_mid_title:'Risque modéré — soyez prudent', result_mid_body:"Envisagez de réduire l\u2019intensité de l\u2019entraînement aujourd\u2019hui et privilégiez les vidéos d\u2019étirement/récupération. Observez pendant 24 à 48 heures. Consultez un professionnel si les symptômes persistent.",
+  result_high_title:'Risque élevé — reposez-vous et consultez', result_high_body:"Vos symptômes suggèrent une lésion possiblement importante. Envisagez d\u2019arrêter l\u2019entraînement sur glace, reposez-vous, appliquez de la glace, et consultez rapidement un médecin ou un spécialiste en médecine du sport pour éviter d\u2019aggraver la blessure.",
+  disclaimer:"Cet outil fournit uniquement des indications générales et ne remplace pas un diagnostic médical professionnel. En cas de douleur intense, persistante ou accompagnée d\u2019un gonflement net, consultez rapidement un médecin ou un spécialiste en médecine du sport.",
+  recommended_videos_title:'Recommandé pour vous', vid_count_tpl:'{n} vidéos adaptées à votre niveau', watch_link:'Regarder →', coming_soon:'Bientôt disponible',
+  logout:'Déconnexion',
+  admin_badge:'⚙ Tableau de bord administrateur', stat_video_count:'Total des vidéos', stat_user_count:'Utilisateurs inscrits',
+  tab_videos:'Gérer les vidéos', tab_feature:'Fonctionnalités / annonces', tab_users:'Liste des utilisateurs',
+  form_add_video:'Ajouter une nouvelle vidéo', l_title:'Titre', l_category:'Catégorie',
+  cat:{detect:'Détection de lésion', recover:'Entraînement de récupération', warmup:'Échauffement / étirement', strength:'Entraînement de force', technique:'Entraînement technique'},
+  l_level:'Niveau adapté', level_all:'Tous niveaux', l_video_url:'Lien vidéo (facultatif)', l_video_desc:'Description',
+  btn_add_video:'Ajouter la vidéo', existing_videos:'Vidéos existantes', empty_videos:'Aucune vidéo pour l\u2019instant — ajoutez-en une ci-dessus.',
+  form_add_feature:'Publier une fonctionnalité / annonce', feature_sub:"Affiché en haut de la page d\u2019accueil des utilisateurs — pour annoncer de nouvelles fonctionnalités, rappels ou événements",
+  l_feature_title:'Titre', l_feature_body:'Contenu', btn_publish:'Publier',
+  published_content:'Contenu publié', empty_features:'Rien n\u2019a encore été publié.',
+  registered_users:'Utilisateurs inscrits', empty_users:'Aucun utilisateur inscrit pour l\u2019instant.', btn_delete:'Supprimer',
+  source_label:'Source', level_label:'Niveau', profile_incomplete:'Profil incomplet',
+  goal_tag:{warm:'Échauffement', strength:'Force', recover:'Récupération', safety:'Sécurité'},
+  goals:{
+    warm:[{t:'Activation de la mobilité articulaire',d:'10 cercles pour chevilles, genoux et hanches pour réveiller la mobilité.'},{t:'8 minutes d\u2019étirements dynamiques',d:'Montées de genoux, marche fentes, glissades latérales pour élever la température musculaire.'},{t:'Activation du gainage',d:'Planche 3×30s pour renforcer la stabilité utile sur la glace.'}],
+    strength:[{t:'Force du bas du corps',d:'Squats 3×12, soulevé de terre unijambiste 3×10 pour renforcer les réceptions de saut.'},{t:'Stabilité de la cheville',d:'Équilibre sur une jambe 3×30s pour réduire le risque d\u2019entorse.'},{t:'Gainage et force dorsale',d:'Pont fessier 3×15, oiseau-chien 3×10 pour soutenir rotation et saut.'}],
+    recover:[{t:'10 minutes d\u2019étirement et relâchement',d:'Étirements statiques cuisse avant/arrière, mollet, fléchisseurs de hanche, 30s chacun.'},{t:'Rouleau de massage',d:'Détendez cuisses et mollets pour relâcher les tensions post-entraînement.'},{t:'Récupération aérobie légère',d:'15 minutes de marche rapide ou vélo léger pour stimuler la circulation.'}],
+    safety:[{t:'Auto-évaluation musculaire',d:'Utilisez l\u2019outil d\u2019auto-évaluation ci-dessous avant l\u2019entraînement.'},{t:'Gestion du volume sur glace',d:'Restez dans les séries de sauts recommandées pour éviter la surutilisation.'},{t:'Hydratation et repos',d:'Hydratez-vous pendant les pauses ; laissez 24h+ entre deux séances intenses.'}]
+  },
+  seedVideos:[
+    {title:'Lésion à la cheville : 3 auto-tests',cat:'detect',level:'全部',desc:'Trois mouvements simples pour un premier avis sur une possible lésion à la cheville.'},
+    {title:'Récupération d\u2019une lésion aux ischio-jambiers — semaine 1',cat:'recover',level:'1-3年',desc:'Mouvements de récupération à faible intensité pour réduire le gonflement et retrouver l\u2019amplitude.'},
+    {title:'Échauffement de 10 minutes avant la glace',cat:'warmup',level:'不到1年',desc:'Une routine d\u2019activation articulaire et d\u2019étirements dynamiques adaptée aux débutants.'},
+    {title:'Force d\u2019absorption à la réception des sauts',cat:'strength',level:'3-6年',desc:'Renforcer la stabilité à la réception pour réduire le risque de blessure au genou et à la cheville.'},
+    {title:'Mobilité de la hanche et technique de rotation',cat:'technique',level:'6年以上',desc:'Entraînement avancé pour améliorer la stabilité de l\u2019axe de rotation.'},
+    {title:'Quand peut-on revenir sur la glace après une lésion',cat:'detect',level:'全部',desc:'Comprendre les degrés de lésion et les critères d\u2019un retour en sécurité.'}
+  ],
+  exp_keys:['不到1年','1-3年','3-6年','6年以上'],
+  settings_title:'Paramètres', settings_sub:'Mettez à jour votre langue, votre profil et votre niveau',
+  btn_settings:'Paramètres', btn_save:'Enregistrer', btn_back_dash:"Retour à l'accueil", l_set_lang:"Langue de l'interface",
+  l_hardest_jump:'Saut le plus difficile réalisé', jump:['Pas encore de saut','Saut de valse','Saut simple','Saut double','Saut triple','Saut quadruple'],
+  l_spin_level:'Niveau de pirouette réalisé', spin:['Pirouette de base (debout / arabesque)','Pirouette avancée (carpée / assise)','Pirouette combinée (plusieurs positions)','Combinaison avancée (changements de pied + positions)'],
+  l_competitive_level:'Niveau de compétition', comp:['Aucune expérience de compétition','Niveau club','Niveau régional','Niveau national','Niveau international'],
+  l_field_test:'Niveau de test Moves in the Field', field_test_not_started:'Pas encore passé'
+},
+"es": {
+  brand_sub:'Detección y recuperación de lesiones musculares',
+  auth_title:'Plataforma de detección y recuperación\nde lesiones musculares para patinadores artísticos',
+  auth_sub:'Objetivos de entrenamiento generados cada día, junto con vídeos de detección y recuperación, para mantenerte en forma con seguridad.',
+  tab_signin:'Iniciar sesión', tab_signup:'Crear cuenta',
+  l_email:'Correo electrónico', l_password:'Contraseña', l_set_password:'Crear contraseña', ph_set_password:'Al menos 6 caracteres', l_confirm_password:'Confirmar contraseña', ph_confirm_password:'Escríbela de nuevo',
+  btn_signin:'Iniciar sesión', btn_signup:'Crear cuenta', auth_hint:'Los datos se guardan en tu navegador actual, para mostrar el flujo completo.',
+  btn_change_lang:'Cambiar idioma',
+  err_fill_login:'Introduce tu correo y contraseña', err_wrong_credentials:'Correo o contraseña incorrectos', err_fill_signup:'Introduce tu correo y contraseña',
+  err_password_short:'La contraseña debe tener al menos 6 caracteres', err_password_mismatch:'Las contraseñas no coinciden',
+  err_admin_blocked:'Este correo no se puede usar para una cuenta normal', err_already_registered:'Este correo ya está registrado, inicia sesión',
+  onb1_title:'¿Dónde conociste Figure Skating Lab?', onb1_sub:'Esto nos ayuda a ofrecerte contenido más adecuado',
+  ref:['YouTube','Búsqueda de Chrome','TikTok','Amigo / entrenador','Instagram','Otro'],
+  onb2_title:'Elige tu apodo y avatar', onb2_sub:'Se usará para dirigirnos a ti en el sistema', l_nickname:'Apodo', l_avatar:'Elige un avatar',
+  onb3_title:'Datos físicos básicos', onb3_sub:'Se usan para generar objetivos y recomendaciones personalizadas',
+  l_age:'Edad', l_gender:'Género', gender:['Mujer','Hombre','Prefiero no decirlo'], l_height:'Altura (cm)', l_weight:'Peso (kg)',
+  onb4_title:'¿Cuánto tiempo llevas practicando patinaje artístico?', onb4_sub:'Esto determina la intensidad y dificultad de tus objetivos',
+  exp:['Menos de 1 año','1–3 años','3–6 años','Más de 6 años'],
+  onb_back:'Atrás', onb_next:'Siguiente', onb_finish:'Finalizar',
+  onb_err_referral:'Selecciona una opción', onb_err_nickname:'Introduce un apodo', onb_err_physical:'Completa todos los campos', onb_err_exp:'Selecciona tu nivel de experiencia',
+  hello_prefix:'Hola, ', today_goals_title:'Objetivos de entrenamiento de hoy', goal_progress_tpl:'{done}/{total} completados',
+  self_check_title:'Autoevaluación muscular', self_check_note:'No es un diagnóstico médico — solo orientativo',
+  check_card_title:'¿Cómo te sientes ahora mismo?', check_card_sub:'Responde las siguientes preguntas para una evaluación rápida del riesgo de lesión',
+  l_q_pain:'Nivel de dolor', pain:['Sin dolor','Molestia leve','Dolor notable','Dolor intenso'],
+  l_q_swell:'Hinchazón o moretones', swell:['Ninguno','Leve','Notable'],
+  l_q_mobility:'Limitación del rango de movimiento', mobility:['Movimiento normal','Ligeramente limitado','No puede ejercer fuerza con normalidad'],
+  btn_view_result:'Ver resultado',
+  result_low_title:'Riesgo bajo', result_low_body:'Tu estado actual es bueno. Puedes entrenar según lo previsto tras calentar. Detente de inmediato si sientes molestias.',
+  result_mid_title:'Riesgo moderado — procede con cautela', result_mid_body:'Considera reducir la intensidad del entrenamiento hoy y priorizar los vídeos de estiramiento/recuperación. Observa durante 24-48 horas. Consulta a un profesional si los síntomas persisten.',
+  result_high_title:'Riesgo alto — descansa y busca atención médica', result_high_body:'Tus síntomas sugieren una posible lesión importante. Considera pausar el entrenamiento sobre hielo, descansar, aplicar hielo, y consultar pronto a un médico o especialista en medicina deportiva para evitar mayores daños.',
+  disclaimer:'Esta herramienta solo ofrece orientación general y no sustituye un diagnóstico médico profesional. Si el dolor es intenso, persistente o viene acompañado de hinchazón notable, consulta lo antes posible a un médico o especialista en medicina deportiva.',
+  recommended_videos_title:'Recomendado para ti', vid_count_tpl:'{n} vídeos según tu nivel', watch_link:'Ver →', coming_soon:'Próximamente',
+  logout:'Cerrar sesión',
+  admin_badge:'⚙ Panel de administración', stat_video_count:'Total de vídeos', stat_user_count:'Usuarios registrados',
+  tab_videos:'Gestionar vídeos', tab_feature:'Funciones / anuncios', tab_users:'Lista de usuarios',
+  form_add_video:'Añadir un nuevo vídeo', l_title:'Título', l_category:'Categoría',
+  cat:{detect:'Detección de lesiones', recover:'Entrenamiento de recuperación', warmup:'Calentamiento y estiramiento', strength:'Entrenamiento de fuerza', technique:'Entrenamiento técnico'},
+  l_level:'Nivel adecuado', level_all:'Todos los niveles', l_video_url:'Enlace del vídeo (opcional)', l_video_desc:'Descripción',
+  btn_add_video:'Añadir vídeo', existing_videos:'Vídeos existentes', empty_videos:'Aún no hay vídeos. Añade uno arriba.',
+  form_add_feature:'Publicar una función / anuncio', feature_sub:'Se muestra en la parte superior de la página de inicio de los usuarios, para anunciar nuevas funciones, recordatorios o eventos',
+  l_feature_title:'Título', l_feature_body:'Contenido', btn_publish:'Publicar',
+  published_content:'Contenido publicado', empty_features:'Aún no se ha publicado nada.',
+  registered_users:'Usuarios registrados', empty_users:'Aún no hay usuarios registrados.', btn_delete:'Eliminar',
+  source_label:'Origen', level_label:'Nivel', profile_incomplete:'Perfil incompleto',
+  goal_tag:{warm:'Calentamiento', strength:'Fuerza', recover:'Recuperación', safety:'Seguridad'},
+  goals:{
+    warm:[{t:'Activación de movilidad articular',d:'10 círculos en tobillos, rodillas y caderas para despertar la movilidad.'},{t:'8 minutos de estiramiento dinámico',d:'Rodillas altas, zancadas, deslizamientos laterales para elevar la temperatura muscular.'},{t:'Activación del core',d:'Plancha 3×30s para dar estabilidad a los movimientos sobre hielo.'}],
+    strength:[{t:'Fuerza del tren inferior',d:'Sentadillas 3×12, peso muerto a una pierna 3×10 para fortalecer las caídas de salto.'},{t:'Entrenamiento de estabilidad de tobillo',d:'Equilibrio a una pierna 3×30s para reducir el riesgo de esguince.'},{t:'Fuerza de core y espalda',d:'Puente de glúteos 3×15, perro de pájaro 3×10 para apoyar la rotación y el salto.'}],
+    recover:[{t:'10 minutos de estiramiento y liberación',d:'Estiramientos estáticos de muslo anterior/posterior, pantorrilla y flexores de cadera, 30s cada uno.'},{t:'Rodillo de espuma',d:'Libera muslos y pantorrillas para aliviar la tensión tras el entrenamiento.'},{t:'Recuperación aeróbica ligera',d:'15 minutos de caminata rápida o ciclismo suave para mejorar la circulación.'}],
+    safety:[{t:'Autoevaluación muscular',d:'Usa la herramienta de autoevaluación de abajo antes de entrenar.'},{t:'Control del volumen sobre hielo',d:'Mantén las series de saltos dentro de lo recomendado para evitar sobrecarga.'},{t:'Hidratación y descanso',d:'Hidrátate durante los descansos; deja 24h+ entre sesiones intensas.'}]
+  },
+  seedVideos:[
+    {title:'Lesión de tobillo: 3 autopruebas',cat:'detect',level:'全部',desc:'Tres movimientos simples para una primera valoración de una posible lesión de tobillo.'},
+    {title:'Recuperación de lesión de isquiotibiales — semana 1',cat:'recover',level:'1-3年',desc:'Movimientos de recuperación de baja intensidad para reducir la hinchazón y recuperar el rango de movimiento.'},
+    {title:'Calentamiento de 10 minutos antes del hielo',cat:'warmup',level:'不到1年',desc:'Rutina de activación articular y estiramiento dinámico apta para principiantes.'},
+    {title:'Fuerza de absorción en la caída de saltos',cat:'strength',level:'3-6年',desc:'Mejora la estabilidad en la caída para reducir el riesgo de lesión de rodilla y tobillo.'},
+    {title:'Movilidad de cadera y técnica de rotación',cat:'technique',level:'6年以上',desc:'Entrenamiento avanzado para mejorar la estabilidad del eje de rotación.'},
+    {title:'Cuándo se puede volver al hielo tras una lesión',cat:'detect',level:'全部',desc:'Comprende los grados de lesión y los criterios para un regreso seguro.'}
+  ],
+  exp_keys:['不到1年','1-3年','3-6年','6年以上'],
+  settings_title:'Configuración', settings_sub:'Actualiza tu idioma, perfil y nivel',
+  btn_settings:'Configuración', btn_save:'Guardar', btn_back_dash:'Volver al inicio', l_set_lang:'Idioma de la interfaz',
+  l_hardest_jump:'El salto más difícil que puedes hacer', jump:['Aún no saltas','Salto de vals','Salto simple','Salto doble','Salto triple','Salto cuádruple'],
+  l_spin_level:'Nivel de giro que puedes hacer', spin:['Giro básico (vertical / arabesque)','Giro avanzado (camel / sentado)','Giro combinado (varias posiciones)','Combinación avanzada (cambios de pie + posiciones)'],
+  l_competitive_level:'Nivel competitivo', comp:['Sin experiencia en competición','Nivel de club','Nivel regional','Nivel nacional','Nivel internacional'],
+  l_field_test:'Nivel de prueba Moves in the Field', field_test_not_started:'Aún no realizada'
+}
+};
+/* ---------------- storage ---------------- */
+const LS = { accounts:'fsl_accounts', session:'fsl_session', videos:'fsl_videos', videosSeeded:'fsl_videos_seeded', features:'fsl_features', lang:'fsl_lang' };
+function getJSON(key, fb){ try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fb; }catch(e){ return fb; } }
+function setJSON(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+const ADMIN_EMAIL = 'figureskatinglab@gmail.com';
+const ADMIN_PASS  = 'figureskatinglab2026!';
+const CAT_KEYS = ['detect','recover','warmup','strength','technique'];
+const CAT_ICON = {detect:'🩺', recover:'🩹', warmup:'🔥', strength:'💪', technique:'⛸️'};
+const LEVEL_KEYS = ['不到1年','1-3年','3-6年','6年以上'];
+const FIELD_TEST_LEVELS = ['Pre-Preliminary','Preliminary','Pre-Juvenile','Juvenile','Intermediate','Novice','Junior','Senior'];
+
+let currentLang = getJSON(LS.lang, null);
+function t(key){ return (T[currentLang] && T[currentLang][key]) || (T.en && T.en[key]) || key; }
+
+function seedVideosIfEmpty(){
+  // Only ever seeds the demo videos ONCE per browser (tracked by fsl_videos_seeded).
+  // After that, the stored video list is authoritative: adding/deleting videos in
+  // admin persists exactly as-is on reopen — never re-added, never silently reset.
+  const alreadySeeded = getJSON(LS.videosSeeded, false);
+  if (alreadySeeded) return;
+  const src = T[currentLang || 'en'].seedVideos;
+  setJSON(LS.videos, src.map((sv,i)=>({id:'v'+(i+1), title:sv.title, cat:sv.cat, level:sv.level, url:'', desc:sv.desc, addedAt:Date.now()})));
+  setJSON(LS.videosSeeded, true);
+}
+
+/* ---------------- view switching ---------------- */
+function showView(id){
+  ['view-lang','view-auth','view-onboard','view-dash','view-settings','view-admin'].forEach(v=>{
+    document.getElementById(v).classList.toggle('hidden', v!==id);
+  });
+  document.getElementById('topbar').style.display = (id==='view-lang' || id==='view-auth') ? 'none' : 'flex';
+}
+
+/* ---------------- language ---------------- */
+function buildLangGrid(){
+  document.getElementById('lang-grid').innerHTML = LANGS.map(l=>
+    `<div class="lang-opt" onclick="pickLang('${l.code}')"><div class="native">${l.native}</div><div class="eng">${l.eng}</div></div>`
+  ).join('');
+}
+function pickLang(code){
+  currentLang = code;
+  setJSON(LS.lang, code);
+  seedVideosIfEmpty();
+  applyStaticText();
+  showView('view-auth');
+}
+function backToLang(){
+  showView('view-lang');
+}
+
+function applyStaticText(){
+  document.getElementById('brand-sub').textContent = t('brand_sub');
+  document.getElementById('auth-title').textContent = t('auth_title');
+  document.getElementById('auth-sub').textContent = t('auth_sub');
+  document.getElementById('tab-signin').textContent = t('tab_signin');
+  document.getElementById('tab-signup').textContent = t('tab_signup');
+  document.getElementById('l-si-email').textContent = t('l_email');
+  document.getElementById('l-si-pass').textContent = t('l_password');
+  document.getElementById('si-email').placeholder = 'you@gmail.com';
+  document.getElementById('btn-si').textContent = t('btn_signin');
+  document.getElementById('l-su-email').textContent = t('l_email');
+  document.getElementById('l-su-pass').textContent = t('l_set_password');
+  document.getElementById('su-pass').placeholder = t('ph_set_password');
+  document.getElementById('l-su-pass2').textContent = t('l_confirm_password');
+  document.getElementById('su-pass2').placeholder = t('ph_confirm_password');
+  document.getElementById('btn-su').textContent = t('btn_signup');
+  document.getElementById('auth-hint').textContent = t('auth_hint');
+  document.getElementById('btn-change-lang').textContent = t('btn_change_lang');
+
+  document.getElementById('onb1-title').textContent = t('onb1_title');
+  document.getElementById('onb1-sub').textContent = t('onb1_sub');
+  document.getElementById('referral-grid').innerHTML = t('ref').map(r=>`<div class="choice" data-v="${r}">${r}</div>`).join('');
+  document.getElementById('onb2-title').textContent = t('onb2_title');
+  document.getElementById('onb2-sub').textContent = t('onb2_sub');
+  document.getElementById('l-ob-nick').textContent = t('l_nickname');
+  document.getElementById('l-ob-avatar').textContent = t('l_avatar');
+  document.getElementById('onb3-title').textContent = t('onb3_title');
+  document.getElementById('onb3-sub').textContent = t('onb3_sub');
+  document.getElementById('l-ob-age').textContent = t('l_age');
+  document.getElementById('l-ob-gender').textContent = t('l_gender');
+  document.getElementById('ob-gender').innerHTML = t('gender').map((g,i)=>`<option value="${i}">${g}</option>`).join('');
+  document.getElementById('l-ob-height').textContent = t('l_height');
+  document.getElementById('l-ob-weight').textContent = t('l_weight');
+  document.getElementById('onb4-title').textContent = t('onb4_title');
+  document.getElementById('onb4-sub').textContent = t('onb4_sub');
+  document.getElementById('exp-grid').innerHTML = t('exp').map((e,i)=>`<div class="choice" data-v="${LEVEL_KEYS[i]}">${e}</div>`).join('');
+  document.getElementById('onb-back').textContent = t('onb_back');
+
+  document.getElementById('today-goals-title').textContent = t('today_goals_title');
+  document.getElementById('self-check-title').textContent = t('self_check_title');
+  document.getElementById('self-check-note').textContent = t('self_check_note');
+  document.getElementById('check-card-title').textContent = t('check_card_title');
+  document.getElementById('check-card-sub').textContent = t('check_card_sub');
+  document.getElementById('l-q-pain').textContent = t('l_q_pain');
+  document.getElementById('opt-pain').innerHTML = t('pain').map((p,i)=>`<div class="opt-pill" data-v="${i}">${p}</div>`).join('');
+  document.getElementById('l-q-swell').textContent = t('l_q_swell');
+  document.getElementById('opt-swell').innerHTML = t('swell').map((p,i)=>`<div class="opt-pill" data-v="${i}">${p}</div>`).join('');
+  document.getElementById('l-q-mobility').textContent = t('l_q_mobility');
+  document.getElementById('opt-mobility').innerHTML = t('mobility').map((p,i)=>`<div class="opt-pill" data-v="${i}">${p}</div>`).join('');
+  document.getElementById('btn-view-result').textContent = t('btn_view_result');
+  document.getElementById('disclaimer-text').textContent = t('disclaimer');
+  document.getElementById('recommended-videos-title').textContent = t('recommended_videos_title');
+  document.getElementById('hello-prefix').textContent = t('hello_prefix');
+
+  document.getElementById('admin-badge').textContent = t('admin_badge');
+  document.getElementById('stat-video-count').textContent = t('stat_video_count');
+  document.getElementById('stat-user-count').textContent = t('stat_user_count');
+  document.getElementById('atab-videos').textContent = t('tab_videos');
+  document.getElementById('atab-feature').textContent = t('tab_feature');
+  document.getElementById('atab-users').textContent = t('tab_users');
+  document.getElementById('form-add-video-title').textContent = t('form_add_video');
+  document.getElementById('l-av-title').textContent = t('l_title');
+  document.getElementById('av-title').placeholder = t('form_add_video');
+  document.getElementById('l-av-cat').textContent = t('l_category');
+  document.getElementById('av-cat').innerHTML = CAT_KEYS.map(c=>`<option value="${c}">${t('cat')[c]}</option>`).join('');
+  document.getElementById('l-av-level').textContent = t('l_level');
+  document.getElementById('av-level').innerHTML = LEVEL_KEYS.map((k,i)=>`<option value="${k}">${t('exp')[i]}</option>`).join('') + `<option value="全部">${t('level_all')}</option>`;
+  document.getElementById('l-av-url').textContent = t('l_video_url');
+  document.getElementById('av-url').placeholder = 'https://...';
+  document.getElementById('l-av-desc').textContent = t('l_video_desc');
+  document.getElementById('btn-add-video').textContent = t('btn_add_video');
+  document.getElementById('existing-videos-title').textContent = t('existing_videos');
+  document.getElementById('form-add-feature-title').textContent = t('form_add_feature');
+  document.getElementById('feature-sub').textContent = t('feature_sub');
+  document.getElementById('l-af-title').textContent = t('l_feature_title');
+  document.getElementById('l-af-body').textContent = t('l_feature_body');
+  document.getElementById('btn-publish').textContent = t('btn_publish');
+  document.getElementById('published-content-title').textContent = t('published_content');
+  document.getElementById('registered-users-title').textContent = t('registered_users');
+
+  rebindOnbGridListeners();
+}
+
+function rebindOnbGridListeners(){
+  const rg = document.getElementById('referral-grid');
+  rg.onclick = e=>{ const c = e.target.closest('.choice'); if(!c) return;
+    rg.querySelectorAll('.choice').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); onbData.referral = c.dataset.v; };
+  const eg = document.getElementById('exp-grid');
+  eg.onclick = e=>{ const c = e.target.closest('.choice'); if(!c) return;
+    eg.querySelectorAll('.choice').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); onbData.exp = c.dataset.v; };
+}
+
+/* ---------------- auth ---------------- */
+function switchAuthTab(which){
+  document.getElementById('tab-signin').classList.toggle('active', which==='signin');
+  document.getElementById('tab-signup').classList.toggle('active', which==='signup');
+  document.getElementById('form-signin').classList.toggle('hidden', which!=='signin');
+  document.getElementById('form-signup').classList.toggle('hidden', which!=='signup');
+  hideAuthErr();
+}
+function showAuthErr(msg){ const e=document.getElementById('auth-err'); e.textContent=msg; e.classList.add('show'); }
+function hideAuthErr(){ document.getElementById('auth-err').classList.remove('show'); }
+
+function handleSignIn(){
+  hideAuthErr();
+  const email = document.getElementById('si-email').value.trim();
+  const pass = document.getElementById('si-pass').value;
+  if(!email || !pass){ showAuthErr(t('err_fill_login')); return; }
+  if(email.toLowerCase() === ADMIN_EMAIL && pass === ADMIN_PASS){
+    setJSON(LS.session, {email: email.toLowerCase(), isAdmin:true});
+    enterAdmin(); return;
+  }
+  const accounts = getJSON(LS.accounts, {});
+  const acct = accounts[email.toLowerCase()];
+  if(!acct || acct.password !== pass){ showAuthErr(t('err_wrong_credentials')); return; }
+  setJSON(LS.session, {email: email.toLowerCase(), isAdmin:false});
+  if(acct.profile && acct.profile.done){ enterDash(); } else { startOnboarding(); }
+}
+function handleSignUp(){
+  hideAuthErr();
+  const email = document.getElementById('su-email').value.trim();
+  const pass = document.getElementById('su-pass').value;
+  const pass2 = document.getElementById('su-pass2').value;
+  if(!email || !pass){ showAuthErr(t('err_fill_signup')); return; }
+  if(pass.length < 6){ showAuthErr(t('err_password_short')); return; }
+  if(pass !== pass2){ showAuthErr(t('err_password_mismatch')); return; }
+  if(email.toLowerCase() === ADMIN_EMAIL){ showAuthErr(t('err_admin_blocked')); return; }
+  const accounts = getJSON(LS.accounts, {});
+  if(accounts[email.toLowerCase()]){ showAuthErr(t('err_already_registered')); return; }
+  accounts[email.toLowerCase()] = { password: pass, createdAt: Date.now(), referral:'', profile:{done:false} };
+  setJSON(LS.accounts, accounts);
+  setJSON(LS.session, {email: email.toLowerCase(), isAdmin:false});
+  startOnboarding();
+}
+function logout(){ localStorage.removeItem(LS.session); showView('view-auth'); }
+
+/* ---------------- onboarding ---------------- */
+let onbStep = 1;
+let onbData = { referral:'', nick:'', avatar:'⛸️', age:'', genderIdx:0, height:'', weight:'', exp:'' };
+
+function startOnboarding(){
+  onbStep = 1; onbData = { referral:'', nick:'', avatar:'⛸️', age:'', genderIdx:0, height:'', weight:'', exp:'' };
+  document.querySelectorAll('#referral-grid .choice').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('#avatar-grid .avatar-opt').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('#exp-grid .choice').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('ob-nick').value=''; document.getElementById('ob-age').value='';
+  document.getElementById('ob-height').value=''; document.getElementById('ob-weight').value='';
+  buildAvatarGrid();
+  renderOnbStep();
+  showView('view-onboard');
+}
+function buildAvatarGrid(){
+  const avatars = ['⛸️','🩰','❄️','🏅','⭐','🦢','💪','🔥','🧊','🎽','🥇','✨'];
+  const grid = document.getElementById('avatar-grid');
+  grid.innerHTML = avatars.map(a=>`<div class="avatar-opt" data-v="${a}">${a}</div>`).join('');
+  grid.onclick = e=>{ const c = e.target.closest('.avatar-opt'); if(!c) return;
+    grid.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); onbData.avatar = c.dataset.v; };
+}
+function renderOnbStep(){
+  for(let i=1;i<=4;i++){
+    document.getElementById('step-'+i).classList.toggle('hidden', i!==onbStep);
+    document.getElementById('pg-'+i).classList.toggle('on', i<=onbStep);
+  }
+  document.getElementById('onb-back').classList.toggle('hidden', onbStep===1);
+  document.getElementById('onb-next').textContent = onbStep===4 ? t('onb_finish') : t('onb_next');
+  document.getElementById('onb-err').classList.remove('show');
+}
+function onbErr(msg){ const e=document.getElementById('onb-err'); e.textContent=msg; e.classList.add('show'); }
+function onbNext(){
+  if(onbStep===1 && !onbData.referral){ onbErr(t('onb_err_referral')); return; }
+  if(onbStep===2){
+    onbData.nick = document.getElementById('ob-nick').value.trim();
+    if(!onbData.nick){ onbErr(t('onb_err_nickname')); return; }
+  }
+  if(onbStep===3){
+    onbData.age = document.getElementById('ob-age').value;
+    onbData.genderIdx = document.getElementById('ob-gender').value;
+    onbData.height = document.getElementById('ob-height').value;
+    onbData.weight = document.getElementById('ob-weight').value;
+    if(!onbData.age || !onbData.height || !onbData.weight){ onbErr(t('onb_err_physical')); return; }
+  }
+  if(onbStep===4){
+    if(!onbData.exp){ onbErr(t('onb_err_exp')); return; }
+    finishOnboarding(); return;
+  }
+  onbStep++; renderOnbStep();
+}
+function onbBack(){ if(onbStep>1){ onbStep--; renderOnbStep(); } }
+function finishOnboarding(){
+  const session = getJSON(LS.session, null); if(!session) return;
+  const accounts = getJSON(LS.accounts, {});
+  const acct = accounts[session.email]; if(!acct) return;
+  acct.referral = onbData.referral; acct.lang = currentLang;
+  acct.profile = { done:true, nick:onbData.nick, avatar:onbData.avatar, age:onbData.age,
+    genderIdx:onbData.genderIdx, height:onbData.height, weight:onbData.weight, exp:onbData.exp };
+  accounts[session.email] = acct;
+  setJSON(LS.accounts, accounts);
+  enterDash();
+}
+
+/* ---------------- goal generation ---------------- */
+function seededRand(seed){ let x = Math.sin(seed) * 10000; return x - Math.floor(x); }
+function dayIndex(){ return Math.floor(new Date().getTime()/86400000); }
+function generateGoals(profile){
+  const pool = t('goals');
+  const seed = dayIndex() + (profile.nick ? profile.nick.length : 0);
+  const pick = (arr, s) => arr[Math.floor(seededRand(s)*arr.length)];
+  const tag = t('goal_tag');
+  const goals = [
+    {catKey:'warm', tag:tag.warm, cls:'tag-warm', ...pick(pool.warm, seed+1)},
+    {catKey:'strength', tag:tag.strength, cls:'tag-strength', ...pick(pool.strength, seed+2)},
+    {catKey:'recover', tag:tag.recover, cls:'tag-recover', ...pick(pool.recover, seed+3)},
+    {catKey:'safety', tag:tag.safety, cls:'tag-safety', ...pick(pool.safety, seed+4)}
+  ];
+  if(profile.exp==='3-6年' || profile.exp==='6年以上'){
+    goals.push({catKey:'strength', tag:tag.strength, cls:'tag-strength', ...pick(pool.strength, seed+5)});
+  }
+  return goals;
+}
+
+/* ---------------- dashboard ---------------- */
+function currentAccount(){
+  const s = getJSON(LS.session, null); if(!s) return null;
+  const accounts = getJSON(LS.accounts, {});
+  return accounts[s.email] || null;
+}
+function enterDash(){
+  const acct = currentAccount();
+  if(!acct || !acct.profile || !acct.profile.done){ startOnboarding(); return; }
+  const p = acct.profile;
+  document.getElementById('dash-nick').textContent = p.nick;
+  document.getElementById('dash-avatar').textContent = p.avatar;
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString(currentLang, {year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  document.getElementById('userchip').innerHTML = `<div class="avatar-badge">${p.avatar}</div><span>${p.nick}</span><button class="logout-btn" onclick="openSettings()">${t('btn_settings')}</button><button class="logout-btn" onclick="logout()">${t('logout')}</button>`;
+  renderGoals(p);
+  renderVideos(p);
+  showView('view-dash');
+}
+
+/* ---------------- settings ---------------- */
+function buildSettingsSelect(id, options, selectedIdx){
+  document.getElementById(id).innerHTML = options.map((o,i)=>`<option value="${i}" ${i===Number(selectedIdx)?'selected':''}>${o}</option>`).join('');
+}
+function openSettings(){
+  const acct = currentAccount();
+  if(!acct || !acct.profile) return;
+  const p = acct.profile;
+
+  document.getElementById('set-title').textContent = t('settings_title');
+  document.getElementById('set-sub').textContent = t('settings_sub');
+  document.getElementById('l-set-lang').textContent = t('l_set_lang');
+  document.getElementById('set-lang').innerHTML = LANGS.map(l=>`<option value="${l.code}" ${l.code===currentLang?'selected':''}>${l.native}</option>`).join('');
+  document.getElementById('l-set-nick').textContent = t('l_nickname');
+  document.getElementById('set-nick').value = p.nick || '';
+  document.getElementById('l-set-avatar').textContent = t('l_avatar');
+  const avatars = ['⛸️','🩰','❄️','🏅','⭐','🦢','💪','🔥','🧊','🎽','🥇','✨'];
+  const ag = document.getElementById('set-avatar-grid');
+  ag.innerHTML = avatars.map(a=>`<div class="avatar-opt ${a===p.avatar?'sel':''}" data-v="${a}">${a}</div>`).join('');
+  ag.onclick = e=>{ const c = e.target.closest('.avatar-opt'); if(!c) return;
+    ag.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('sel')); c.classList.add('sel'); };
+
+  document.getElementById('l-set-age').textContent = t('l_age');
+  document.getElementById('set-age').value = p.age || '';
+  document.getElementById('l-set-gender').textContent = t('l_gender');
+  buildSettingsSelect('set-gender', t('gender'), p.genderIdx || 0);
+  document.getElementById('l-set-height').textContent = t('l_height');
+  document.getElementById('set-height').value = p.height || '';
+  document.getElementById('l-set-weight').textContent = t('l_weight');
+  document.getElementById('set-weight').value = p.weight || '';
+
+  document.getElementById('l-set-exp').textContent = t('onb4_title');
+  const expIdx = LEVEL_KEYS.indexOf(p.exp); 
+  buildSettingsSelect('set-exp', t('exp'), expIdx>=0?expIdx:0);
+
+  document.getElementById('l-set-jump').textContent = t('l_hardest_jump');
+  buildSettingsSelect('set-jump', t('jump'), p.jumpIdx || 0);
+  document.getElementById('l-set-spin').textContent = t('l_spin_level');
+  buildSettingsSelect('set-spin', t('spin'), p.spinIdx || 0);
+  document.getElementById('l-set-comp').textContent = t('l_competitive_level');
+  buildSettingsSelect('set-comp', t('comp'), p.compIdx || 0);
+  document.getElementById('l-set-fieldtest').textContent = t('l_field_test');
+  const fieldTestOptions = [t('field_test_not_started')].concat(FIELD_TEST_LEVELS);
+  buildSettingsSelect('set-fieldtest', fieldTestOptions, p.fieldTestIdx || 0);
+
+  document.getElementById('btn-set-back').textContent = t('btn_back_dash');
+  document.getElementById('btn-set-save').textContent = t('btn_save');
+  document.getElementById('set-err').classList.remove('show');
+
+  showView('view-settings');
+}
+function cancelSettings(){ enterDash(); }
+function saveSettings(){
+  const session = getJSON(LS.session, null); if(!session) return;
+  const accounts = getJSON(LS.accounts, {});
+  const acct = accounts[session.email]; if(!acct) return;
+
+  const nick = document.getElementById('set-nick').value.trim();
+  const age = document.getElementById('set-age').value;
+  const height = document.getElementById('set-height').value;
+  const weight = document.getElementById('set-weight').value;
+  if(!nick || !age || !height || !weight){
+    const e = document.getElementById('set-err'); e.textContent = t('onb_err_physical'); e.classList.add('show'); return;
+  }
+  const avatarEl = document.querySelector('#set-avatar-grid .avatar-opt.sel');
+
+  const newLang = document.getElementById('set-lang').value;
+  const expIdx = Number(document.getElementById('set-exp').value);
+
+  acct.profile = {
+    done:true,
+    nick, avatar: avatarEl ? avatarEl.dataset.v : (acct.profile.avatar || '⛸️'),
+    age, genderIdx: document.getElementById('set-gender').value,
+    height, weight,
+    exp: LEVEL_KEYS[expIdx] || acct.profile.exp,
+    jumpIdx: document.getElementById('set-jump').value,
+    spinIdx: document.getElementById('set-spin').value,
+    compIdx: document.getElementById('set-comp').value,
+    fieldTestIdx: document.getElementById('set-fieldtest').value
+  };
+  accounts[session.email] = acct;
+  setJSON(LS.accounts, accounts);
+
+  if(newLang !== currentLang){
+    currentLang = newLang;
+    setJSON(LS.lang, newLang);
+    applyStaticText();
+  }
+  enterDash();
+}
+function goalStorageKey(){ const s = getJSON(LS.session, null); return 'fsl_goalstate_' + s.email + '_' + dayIndex(); }
+function renderGoals(p){
+  const goals = generateGoals(p);
+  const state = getJSON(goalStorageKey(), {});
+  const list = document.getElementById('goal-list');
+  list.innerHTML = goals.map((g,i)=>{
+    const done = !!state[i];
+    return `<div class="goal-item">
+      <div class="goal-check ${done?'done':''}" onclick="toggleGoal(${i})">${done?'✓':''}</div>
+      <div class="goal-body"><b>${g.t}</b><p>${g.d}</p><span class="goal-tag ${g.cls}">${g.tag}</span></div>
+    </div>`;
+  }).join('');
+  const doneCount = goals.filter((g,i)=>state[i]).length;
+  document.getElementById('goal-progress-label').textContent = t('goal_progress_tpl').replace('{done}',doneCount).replace('{total}',goals.length);
+}
+function toggleGoal(i){
+  const key = goalStorageKey(); const state = getJSON(key, {});
+  state[i] = !state[i]; setJSON(key, state);
+  const acct = currentAccount(); renderGoals(acct.profile);
+}
+function renderVideos(p){
+  const videos = getJSON(LS.videos, []);
+  const recommended = videos.filter(v => v.level==='全部' || v.level===p.exp);
+  const rest = videos.filter(v => !(v.level==='全部' || v.level===p.exp));
+  const ordered = recommended.concat(rest);
+  document.getElementById('vid-count-label').textContent = t('vid_count_tpl').replace('{n}', recommended.length);
+  const levelLabel = (lvl)=>{
+    if(lvl==='全部') return t('level_all');
+    const idx = LEVEL_KEYS.indexOf(lvl);
+    return idx>=0 ? t('exp')[idx] : lvl;
+  };
+  document.getElementById('vid-grid').innerHTML = ordered.map(v=>`
+    <div class="vid-card">
+      <div class="vid-thumb">${CAT_ICON[v.cat]||'🎬'}</div>
+      <div class="vid-body">
+        <b>${v.title}</b><p>${v.desc||''}</p>
+        <div class="vid-meta">
+          <span class="vid-level">${t('cat')[v.cat]||v.cat} · ${levelLabel(v.level)}</span>
+          ${v.url ? `<a class="vid-link" href="${v.url}" target="_blank" rel="noopener">${t('watch_link')}</a>` : `<span class="vid-link" style="opacity:.4;">${t('coming_soon')}</span>`}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ---------------- self-check ---------------- */
+const checkAnswers = {pain:null, swell:null, mobility:null};
+document.addEventListener('click', e=>{
+  const row = e.target.closest('.opt-row'); if(!row) return;
+  const pill = e.target.closest('.opt-pill'); if(!pill) return;
+  const q = row.dataset.q;
+  row.querySelectorAll('.opt-pill').forEach(p=>p.classList.remove('sel'));
+  pill.classList.add('sel');
+  checkAnswers[q] = parseInt(pill.dataset.v,10);
+});
+function runCheck(){
+  if(checkAnswers.pain===null || checkAnswers.swell===null || checkAnswers.mobility===null){
+    alert(t('onb_err_physical')); return;
+  }
+  const score = checkAnswers.pain + checkAnswers.swell + checkAnswers.mobility;
+  const box = document.getElementById('check-result');
+  box.classList.remove('result-low','result-mid','result-high');
+  let cls, title, body;
+  if(score<=1){ cls='result-low'; title=t('result_low_title'); body=t('result_low_body'); }
+  else if(score<=4){ cls='result-mid'; title=t('result_mid_title'); body=t('result_mid_body'); }
+  else { cls='result-high'; title=t('result_high_title'); body=t('result_high_body'); }
+  box.classList.add(cls, 'show');
+  box.innerHTML = `<b>${title}</b><p>${body}</p>`;
+}
+
+/* ---------------- admin ---------------- */
+function enterAdmin(){
+  document.getElementById('userchip').innerHTML = `<div class="avatar-badge">⚙</div><span>Admin</span><button class="logout-btn" onclick="logout()">${t('logout')}</button>`;
+  renderAdmin();
+  showView('view-admin');
+}
+function switchAdminTab(which){
+  ['videos','feature','users'].forEach(tb=>{
+    document.getElementById('atab-'+tb).classList.toggle('on', tb===which);
+    document.getElementById('apanel-'+tb).classList.toggle('hidden', tb!==which);
+  });
+}
+function renderAdmin(){
+  const videos = getJSON(LS.videos, []);
+  const accounts = getJSON(LS.accounts, {});
+  const features = getJSON(LS.features, []);
+  document.getElementById('ad-vidcount').textContent = videos.length;
+  document.getElementById('ad-usercount').textContent = Object.keys(accounts).length;
+
+  document.getElementById('admin-vid-list').innerHTML = videos.length ? videos.slice().reverse().map(v=>`
+    <div class="vid-row"><div><div class="t">${v.title}</div><div class="m">${t('cat')[v.cat]||v.cat} · ${v.level}</div></div>
+    <button class="del-btn" onclick="deleteVideo('${v.id}')">${t('btn_delete')}</button></div>`).join('') : `<div class="empty">${t('empty_videos')}</div>`;
+
+  document.getElementById('admin-feature-list').innerHTML = features.length ? features.slice().reverse().map(f=>`
+    <div class="vid-row"><div><div class="t">${f.title}</div><div class="m">${new Date(f.addedAt).toLocaleDateString(currentLang)}</div></div>
+    <button class="del-btn" onclick="deleteFeature('${f.id}')">${t('btn_delete')}</button></div>`).join('') : `<div class="empty">${t('empty_features')}</div>`;
+
+  const accEntries = Object.entries(accounts);
+  document.getElementById('admin-user-list').innerHTML = accEntries.length ? accEntries.map(([email,a])=>`
+    <div class="vid-row"><div><div class="t">${a.profile && a.profile.nick ? a.profile.nick : email}</div>
+    <div class="m">${email} · ${t('source_label')}: ${a.referral||'-'} · ${t('level_label')}: ${(a.profile&&a.profile.exp)? (t('exp')[LEVEL_KEYS.indexOf(a.profile.exp)]||a.profile.exp) : t('profile_incomplete')}</div></div></div>`).join('') : `<div class="empty">${t('empty_users')}</div>`;
+}
+function addVideo(){
+  const title = document.getElementById('av-title').value.trim();
+  if(!title){ alert(t('l_title')); return; }
+  const videos = getJSON(LS.videos, []);
+  videos.push({ id:'v'+Date.now(), title, cat: document.getElementById('av-cat').value, level: document.getElementById('av-level').value,
+    url: document.getElementById('av-url').value.trim(), desc: document.getElementById('av-desc').value.trim(), addedAt: Date.now() });
+  setJSON(LS.videos, videos);
+  document.getElementById('av-title').value=''; document.getElementById('av-url').value=''; document.getElementById('av-desc').value='';
+  renderAdmin();
+}
+function deleteVideo(id){ let videos = getJSON(LS.videos, []); videos = videos.filter(v=>v.id!==id); setJSON(LS.videos, videos); renderAdmin(); }
+function addFeature(){
+  const title = document.getElementById('af-title').value.trim();
+  const body = document.getElementById('af-body').value.trim();
+  if(!title){ alert(t('l_feature_title')); return; }
+  const features = getJSON(LS.features, []);
+  features.push({id:'f'+Date.now(), title, body, addedAt:Date.now()});
+  setJSON(LS.features, features);
+  document.getElementById('af-title').value=''; document.getElementById('af-body').value='';
+  renderAdmin();
+}
+function deleteFeature(id){ let features = getJSON(LS.features, []); features = features.filter(f=>f.id!==id); setJSON(LS.features, features); renderAdmin(); }
+
+/* ---------------- boot ---------------- */
+(function boot(){
+  buildLangGrid();
+  if(!currentLang){ showView('view-lang'); return; }
+  seedVideosIfEmpty();
+  applyStaticText();
+  const session = getJSON(LS.session, null);
+  if(!session){ showView('view-auth'); return; }
+  if(session.isAdmin){ enterAdmin(); return; }
+  const acct = currentAccount();
+  if(acct && acct.profile && acct.profile.done){ enterDash(); }
+  else if(acct){ startOnboarding(); }
+  else { showView('view-auth'); }
+})();
+</script>
+</body>
+</html>
